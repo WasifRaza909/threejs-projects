@@ -5,13 +5,16 @@ import Island from '../models/Island'
 import Sky from '../models/Sky'
 import Bird from '../models/Bird'
 import Plane from '../models/Plane'
+import { OrbitControls } from '@react-three/drei'
 {/* <div className="absolute top-28 left-0 right-0 z-10 flex items-center justify-center">
         POPUP
       </div> */}
 const Home = () => {
   const [isRotating, setIsRotating] =  useState(false)
+  const [currentStage, setCurrentStage] = useState(1);
   const adjustIslandForScreenSize = () => {
     let screenScale = null; let islandPosition = [0, -6.5, -43];
+
     let islandRotation = [0.1, 4.7, 0]
     if (window.innerWidth < 768) {
       islandScale = [0.9, 0.9, 0.9]
@@ -55,6 +58,7 @@ const Home = () => {
   return (
     <section className='w-full h-screen relative'>
       <Canvas className={`w-full h-screen bg-transparent ${isRotating ? 'cursor-grabbing' : 'cursor-grab'}`} camera={{ near: 0.1, far: 1000 }}>
+        
         <Suspense fallback={<Loader />}>
           <directionalLight position={[1, 1, 1]} intensity={2} /> // directionalLight is like sun change
           <ambientLight intensity={0.5} /> // ambientLight change the light of all object same
@@ -63,8 +67,8 @@ const Home = () => {
           <hemisphereLight skyColor="#b1e1ff" groundColor="#000000" intensity={1} /> // It illuminates the scene with a gradient
 
           <Bird />
-          <Sky />
-          <Island isRotating={isRotating} setIsRotating={setIsRotating} position={islandPosition} scale={islandScale} rotation={islandRotation} />
+          <Sky isRotating={isRotating}/>
+          <Island  setCurrentStage={setCurrentStage} isRotating={isRotating} setIsRotating={setIsRotating} position={islandPosition} scale={islandScale} rotation={islandRotation} />
           <Plane planePosition={planePosition} planeScale={planeScale} isRotating={isRotating} rotation={[0,20,0]}/>
 
         </Suspense>
