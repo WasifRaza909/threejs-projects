@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "vercel --prod"
   },
   "devDependencies": {
     "vite": "^5.3.4",
     "vite-plugin-restart": "^0.4.1"
   },
   "dependencies": {
-    "three": "^0.166.1"
+    "three": "^0.166.1",
+    "vercel": "^35.1.0"
   }
 }

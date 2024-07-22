@@ -42,11 +42,11 @@ fontLoader.load(
 
         scene.add(text)
 
-        
+        const geometry = new THREE.BoxGeometry( 1, 1, 1 ); 
+        const material = new THREE.MeshMatcapMaterial( {matcap: matcapTexture} ); 
         for(let i = 0; i < 1000; i++){
-            const geometry = new THREE.BoxGeometry( 1, 1, 1 ); 
-            const material = new THREE.MeshMatcapMaterial( {matcap: matcapTexture} ); 
             const cube = new THREE.Mesh( geometry, material );
+         
             cube.position.x = (Math.random()  - 0.5) * 50
             cube.position.y = (Math.random()  - 0.5) * 50
             cube.position.z = (Math.random()  - 0.5) * 50
