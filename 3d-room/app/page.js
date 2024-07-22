@@ -56,7 +56,7 @@ export default function Home() {
     return () => {
       gui.destroy();
     };
-  }, [cameraSettings]);
+  }, []);
 
   
   return (

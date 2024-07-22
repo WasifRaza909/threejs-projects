@@ -12,7 +12,6 @@ function Room(props) {
 
   const newColor = new Color(0xffffff);
   useEffect(() => {
-          
   },[])
 
   return (
