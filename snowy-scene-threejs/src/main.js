@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import GUI from 'lil-gui'; 
+import GUI from 'lil-gui';
 
 // Gui init
 const gui = new GUI();
@@ -24,29 +24,29 @@ camera.position.y = 4
 camera.position.z = 7
 scene.add(camera)
 
-const cameraPositionDebug  = gui.addFolder('Camera Position')
-cameraPositionDebug.add( camera.position, 'x', 0, 20, 1 );
-cameraPositionDebug.add( camera.position, 'y', 0, 20, 1 );
-cameraPositionDebug.add( camera.position, 'z', 0, 20, 1 );
+const cameraPositionDebug = gui.addFolder('Camera Position')
+cameraPositionDebug.add(camera.position, 'x', 0, 20, 1);
+cameraPositionDebug.add(camera.position, 'y', 0, 20, 1);
+cameraPositionDebug.add(camera.position, 'z', 0, 20, 1);
 
 
 // Floor
 
-const floorGeometry = new THREE.PlaneGeometry( 9, 9,100, 100);
+const floorGeometry = new THREE.PlaneGeometry(14, 14, 100, 100);
 const floorMaterial = new THREE.MeshBasicMaterial();
 
-const floor = new THREE.Mesh( floorGeometry, floorMaterial );
-scene.add( floor );
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+scene.add(floor);
 
-floor.rotation.x = -Math.PI  * 0.5
+floor.rotation.x = -Math.PI * 0.5
 
 // Floor Rotation Debug
 
 const floorRotationDebug = gui.addFolder('Floor Rotation')
 
-floorRotationDebug.add( floor.rotation, 'x', 0, 10, 1 );
-floorRotationDebug.add( floor.rotation, 'y', 0, 10, 1 );
-floorRotationDebug.add( floor.rotation, 'z', 0, 10, 1 );
+floorRotationDebug.add(floor.rotation, 'x', 0, 10, 1);
+floorRotationDebug.add(floor.rotation, 'y', 0, 10, 1);
+floorRotationDebug.add(floor.rotation, 'z', 0, 10, 1);
 
 // House Container
 
@@ -67,36 +67,45 @@ house.add(walls)
 
 
 // Roof
-const roofGeometry = new THREE.PlaneGeometry(4, 5)
-const roofMaterial = new THREE.MeshStandardMaterial({color: "yellow"})
+const roofGeometry = new THREE.ConeGeometry(3.5, 1.5, 27, 1);
+const roofMaterial = new THREE.MeshStandardMaterial({ color: "yellow" })
+const roof = new THREE.Mesh(roofGeometry, roofMaterial);
 
-const roof1 = new THREE.Mesh(roofGeometry, roofMaterial)
-const roof2 = new THREE.Mesh(roofGeometry, roofMaterial)
-roof1.position.x = 2
-roof1.position.y = 2
-roof2.position.x = 4
-roof2.position.y = 4
-house.add(roof1)
-// roof1.rotation.x = Math.PI * 0.25
-roof1.rotation.y = Math.PI * 0.5
-roofMaterial.side = THREE.DoubleSide
+roof.position.y = 0.75 + 2.5
+house.add(roof);
 
-// Roof Debug
-// Floor Rotation Debug
 
-const roofDebug = gui.addFolder('Roof')
+// Door
+const doorGeometry = new THREE.PlaneGeometry(1.5, 2, 1)
+const doorMaterial = new THREE.MeshStandardMaterial({color: "red"})
+const door= new THREE.Mesh(doorGeometry, doorMaterial)
+door.position.y = 1
+door.position.z = 2.01
 
-roofDebug.add( roof1.rotation, 'x', -10, 20, 0.1 ).name('Roof Rotation X');
-roofDebug.add( roof1.rotation, 'y', -10, 20, 0.1 ).name('Roof Rotation Y');
-roofDebug.add( roof1.rotation, 'z', -10, 20, 0.1 ).name('Roof Rotation Z');
+house.add(door)
 
-roofDebug.add( roof1.position, 'x', -10, 20, 0.1 );
-roofDebug.add( roof1.position, 'y', -10, 20, 0.1 );
-roofDebug.add( roof1.position, 'z', -10, 20, 0.1 );
+// Snow
+const snowGeometry = new THREE.SphereGeometry( 0.5, 24 ); 
+const snowMaterial = new THREE.MeshStandardMaterial({color : "green"})
 
+const minRadius = 4;
+const maxRadius = 6;
+for(let i = 0; i < 40; i++) {
+  const snow = new THREE.Mesh(snowGeometry, snowMaterial);
+  scene.add(snow);
+  const angle = Math.random() * Math.PI * 2;
+  // Random angle for each snowflake
+  const r = minRadius + (Math.random() * (maxRadius - minRadius));
+  snow.position.y = 0.2
+  // Convert polar coordinates (r, angle) to Cartesian coordinates (x, z)
+  snow.position.x = r * Math.cos(angle);
+  snow.position.z = r * Math.sin(angle);
+  const scale = 0.2 + Math.random() * 1; // Adjust range as needed
+  snow.scale.set(scale, scale, scale);
+}
 // Lights
-const light = new THREE.AmbientLight( 0xffffff ); // soft white light
-scene.add( light );
+const light = new THREE.AmbientLight(0xffffff); // soft white light
+scene.add(light);
 
 // Controls
 const controls = new OrbitControls(camera, canvas);
