@@ -22,7 +22,7 @@ import restart from 'vite-plugin-restart'
 
 export default {
     root: 'src/',
-    publicDir: 'public/assets/',
+    publicDir: '../public/static/',
     build:
     {
         outDir: '../dist', // Output in the dist/ folder
