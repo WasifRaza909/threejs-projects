@@ -81,7 +81,7 @@ cameraPositionDebug.add(camera.position, 'z', 0, 20, 0.01);
 // Floor
 
 const floorGeometry = new THREE.PlaneGeometry(40, 40, 64, 64);
-const floorMaterial = new THREE.MeshStandardMaterial({ transparent: true, alphaMap: floorAlphaTexture, normalMap: floorNormalTexture, map: floorColorTexture, aoMap: floorARMTexture, roughnessMap: floorARMTexture, metalnessMap: floorARMTexture, displacementMap: floorDispTexture, displacementScale: 0.4, color: "#f9f9f9", displacementBias: 0.2 });
+const floorMaterial = new THREE.MeshStandardMaterial({ transparent: true, alphaMap: floorAlphaTexture, normalMap: floorNormalTexture, map: floorColorTexture, roughnessMap: floorARMTexture, metalnessMap: floorARMTexture, displacementMap: floorDispTexture});
 
 
 
@@ -145,7 +145,7 @@ house.add(door)
 
 // Bushes
 const bushGeometry = new THREE.SphereGeometry(0.4, 40)
-const bushMaterial = new THREE.MeshStandardMaterial({ normalMap: bushNormalTexture, map: bushColorTexture, aoMap: bushAOTexture, displacementMap: bushDispTexture , displacementScale: 0.2, displacementBias: 0.2 })
+const bushMaterial = new THREE.MeshStandardMaterial({ normalMap: floorNormalTexture, map:floorColorTexture, aoMap: bushAOTexture, displacementMap: bushDispTexture , displacementScale: 0.2, displacementBias: 0.2 })
 
 const bush1 = new THREE.Mesh(bushGeometry, bushMaterial)
 const bush2 = new THREE.Mesh(bushGeometry, bushMaterial)
@@ -178,11 +178,11 @@ house.add(bush1, bush2, bush3,bush4)
 
 // Snows
 const snowGeometry = new THREE.SphereGeometry(0.5, 100);
-const snowMaterial = new THREE.MeshStandardMaterial({ aoMap: snowARMTexture, metalnessMap: snowARMTexture, roughnessMap: snowARMTexture, normalMap: snowNormalTexture, map: snowColorTexture, displacementMap: snowDispTexture, displacementScale: 0.2, color: "#f9f9f9" })
+const snowMaterial = new THREE.MeshStandardMaterial({ aoMap: bushAOTexture, metalnessMap: floorARMTexture, roughnessMap: floorARMTexture, normalMap: floorNormalTexture, map: floorColorTexture, displacementMap: floorDispTexture, displacementScale: 0.2 })
 
 const minRadius = 5;
 const maxRadius = 9;
-for (let i = 0; i < 150; i++) {
+for (let i = 0; i < 100; i++) {
   const snow = new THREE.Mesh(snowGeometry, snowMaterial);
   scene.add(snow);
   const angle = Math.random() * Math.PI * 2;
@@ -192,16 +192,20 @@ for (let i = 0; i < 150; i++) {
   // Convert polar coordinates (r, angle) to Cartesian coordinates (x, z)
   snow.position.x = r * Math.cos(angle);
   snow.position.z = r * Math.sin(angle);
-  const scale = 0.1 + Math.random() * 0.4; // Adjust range as needed
+  snow.rotation.x = Math.random() * 1;
+  snow.rotation.y = Math.random() * 1;
+  snow.rotation.z = Math.random() * 1;
+  
+  const scale = 0.1 + Math.random() * 0.5; // Adjust range as needed
   snow.scale.set(scale, scale, scale);
 }
 
-// Snow man
+// Sn
 const snowMan = new THREE.Group()
 scene.add(snowMan)
 
 const snowManGeometry = new THREE.SphereGeometry(1, 24)
-const snowManMaterial = new THREE.MeshStandardMaterial({ aoMap: snowARMTexture, metalnessMap: snowARMTexture, roughnessMap: snowARMTexture, normalMap: snowNormalTexture, map: snowColorTexture })
+const snowManMaterial = new THREE.MeshStandardMaterial({ aoMap: floorARMTexture, metalnessMap: floorARMTexture, roughnessMap: floorARMTexture, normalMap: floorNormalTexture, map: floorColorTexture })
 
 const biggestSnow = new THREE.Mesh(snowManGeometry, snowManMaterial)
 
@@ -214,6 +218,8 @@ smallSnow.scale.set(0.5, 0.5, 0.5)
 biggestSnow.position.z = 5.4
 biggestSnow.position.x = -5
 biggestSnow.position.y = 1
+biggestSnow.rotation.y = 1
+biggestSnow.rotation.x = 2
 
 bigSnow.position.z = 5.4;
 bigSnow.position.x = -5
@@ -230,7 +236,7 @@ snowMan.add(biggestSnow, bigSnow, smallSnow);
 snowMan.position.z = 3
 
 // Lights
-const light = new THREE.AmbientLight(0xffffff, 4); // soft white light
+const light = new THREE.AmbientLight(0xffffff, 8); // soft white light
 scene.add(light);
 
 
