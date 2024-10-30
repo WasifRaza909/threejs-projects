@@ -338,6 +338,12 @@ window.addEventListener('mousedown', (e) => {
   isMouseDown= true;
   mouse = { x: e.clientX, y: e.clientY };
 })
+
+
+window.addEventListener('resize', (e) => {
+  window.location.reload()
+})
+
 window.addEventListener('mouseup', () => {
   isMouseDown= false
 
