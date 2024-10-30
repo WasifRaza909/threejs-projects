@@ -62,20 +62,22 @@ const loader = new GLTFLoader();
 let glass;
 loader.load("./assets/apple-watch.glb", (gltf) => {
   glass = gltf.scene;
-  const loadingBarTl = gsap.timeline({
-    onUpdate: () => {
-      // Check the current progress of the loading bar animation
-      loadingProgressPercentage = Math.round(
-        Math.min(100, (loadingBarTl.progress() / 1) * 100)
-      ); // Get the progress (0 to 1)
-      loaderPercentage.textContent = `${loadingProgressPercentage}%`;
-    },
-  });
+  const loadingBarTl = gsap.timeline();
 
-  loadingBarTl.to(
+  loadingBarTl.fromTo(
     ".js-loader-bottom-bar",
     {
+      width: "99%",
+    },
+    {
       width: "100%",
+      delay: 0.6,
+            onUpdate: (e) => {
+        loadingProgressPercentage = Math.round(
+          Math.min(100, (loadingBarTl.progress() / 1) * 100)
+        );
+        loaderPercentage.textContent = `100%`;
+      },
     }
   ).to('.js-loader',{
     height: 0,
@@ -313,23 +315,24 @@ sliderIndicators.forEach((sliderIndicator) => {
 const loaderPercentage = document.querySelector(".js-loader-percentage");
 let loadingProgressPercentage;
 window.addEventListener("load", () => {
-  const loadingBarTl = gsap.timeline({
+  const loadLoadingBarTl = gsap.timeline({
     onUpdate: () => {
       // Check the current progress of the loading bar animation
       loadingProgressPercentage = Math.round(
-        Math.min(90, (loadingBarTl.progress() / 1) * 100)
+        Math.min(99, (loadLoadingBarTl.progress() / 1) * 100)
       ); // Get the progress (0 to 1)
       loaderPercentage.textContent = `${loadingProgressPercentage}%`;
     },
   });
 
-  loadingBarTl.fromTo(
+  loadLoadingBarTl.fromTo(
     ".js-loader-bottom-bar",
     {
       width: "0%",
     },
     {
       width: "90%",
+      duration: 0.5,
     }
   );
 });
@@ -349,7 +352,7 @@ window.addEventListener('mouseup', () => {
 
 })
 window.addEventListener('mousemove', (e) => {
-  if(isMouseDown){
+  if(isMouseDown && glass){
     if(e.clientX > window.innerWidth * 0.62) {
       const deltaX = e.clientX - mouse.x;
   
