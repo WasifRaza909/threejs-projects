@@ -70,12 +70,18 @@ header h1 {
   height: 85%;
   display: flex;
   align-items: center;
-  max-width: 40%;
 }
 
 .banner-content h1 {
   font-size: 7rem;
   color: #fff;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+
+.banner-content h1 span{
+  display: inline-block;
 }
 
 .banner-content .banner-content-sub-heading {
@@ -85,6 +91,7 @@ header h1 {
 }
 
 .banner-content .banner-content-description {
+  max-width: 60%;
   font-size: 1.1rem;
   margin-top: 1rem;
   letter-spacing: 0.3px;

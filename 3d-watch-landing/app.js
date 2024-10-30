@@ -3,15 +3,20 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import GUI from "lil-gui";
 import gsap from "gsap";
-// const gui = new GUI();
-
+const gui = new GUI();
+gui.hide()
 // Constants
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
 const defaultColorModel = "#a30000";
-let modelLoaded = false;
+let loadingAnimationComplete = false;
+let isMouseDown = false;
+let mouse = {
+  x: 0,
+  y: 0,
+}
 
 // Create a scene
 const scene = new THREE.Scene();
@@ -49,7 +54,7 @@ scene.add(directionalLight);
 /**
  * GUI
  */
-// const watchTweaks = gui.addFolder("Awesome Cube");
+const watchTweaks = gui.addFolder("Awesome Cube");
 
 // Loader
 const loader = new GLTFLoader();
@@ -57,7 +62,6 @@ const loader = new GLTFLoader();
 let glass;
 loader.load("./assets/apple-watch.glb", (gltf) => {
   glass = gltf.scene;
-  modelLoaded = true;
   const loadingBarTl = gsap.timeline({
     onUpdate: () => {
       // Check the current progress of the loading bar animation
@@ -75,9 +79,11 @@ loader.load("./assets/apple-watch.glb", (gltf) => {
     }
   ).to('.js-loader',{
     height: 0,
+    onComplete:() => {
+      loadingAnimationComplete = true;
+    } 
   })
-  
-  ;
+
   glass.traverse((child) => {
     if (child.isMesh && child.material) {
       if (
@@ -114,7 +120,7 @@ loader.load("./assets/apple-watch.glb", (gltf) => {
       x: -1,
     },
     {
-      x: 0.16,
+      x: 0.14,
       y: -0.015,
       duration: 2,
     },"<"
@@ -126,59 +132,101 @@ loader.load("./assets/apple-watch.glb", (gltf) => {
       x: 0,
     },
     {
-      x: 0.938,
-      y: -0.956,
-      z: 0.65,
+      // x: 0.938,
+      y: -0.91,
+      // z: 0.65,
       duration: 2,
     },"<"
   );
+  loadingBarTl.fromTo(
+    '.js-logo, .js-nav-links',
+    {
+      opacity: 0,
+    },
+    {
+      opacity: 1,
+      duration: 0.4,
+    }
+  ).fromTo(
+    '.js-banner-content-sub-heading, .js-banner-content-description',
+    {
+      x: '-40%',
+      opacity: 0,
+    },
+    {
+      x: '0%',
+      opacity: 1,
+      duration: 0.4,
+    }
+  ).fromTo(
+    '.js-shop-now-btn',
+    {
+      y: '100%',
+      opacity:0,
+    },
+    {
+      y: '0%',
+      opacity:1,
+      duration: 0.4,
+    },'<'
 
-  //   watchTweaks
-  //     .add(glass.position, "y")
-  //     .min(-3)
-  //     .max(3)
-  //     .step(0.001)
-  //     .name("position Y");
-  //   watchTweaks
-  //     .add(glass.position, "x")
-  //     .min(-3)
-  //     .max(3)
-  //     .step(0.001)
-  //     .name("position x");
-  //   watchTweaks
-  //     .add(glass.position, "z")
-  //     .min(-3)
-  //     .max(3)
-  //     .step(0.001)
-  //     .name("position z");
+  ).fromTo(
+    '.js-banner-heading-span',
+    {
+      y: '100%',
+    },
+    {
+      y: '0%',
+      duration: 0.8,
+    },"-=0.4"
+  )
 
-  //     watchTweaks
-  //     .add(glass.rotation, "y")
-  //     .min(-3)
-  //     .max(3)
-  //     .step(0.001)
-  //     .name("rotation Y");
-  //   watchTweaks
-  //     .add(glass.rotation, "x")
-  //     .min(-3)
-  //     .max(3)
-  //     .step(0.001)
-  //     .name("rotation x");
-  //   watchTweaks
-  //     .add(glass.rotation, "z")
-  //     .min(-3)
-  //     .max(3)
-  //     .step(0.001)
-  //     .name("rotation z");
+    watchTweaks
+      .add(glass.position, "y")
+      .min(-3)
+      .max(3)
+      .step(0.001)
+      .name("position Y");
+    watchTweaks
+      .add(glass.position, "x")
+      .min(-3)
+      .max(3)
+      .step(0.001)
+      .name("position x");
+    watchTweaks
+      .add(glass.position, "z")
+      .min(-3)
+      .max(3)
+      .step(0.001)
+      .name("position z");
 
-  //     watchTweaks.add({ scale: glass.scale.x }, 'scale')
-  //     .min(-3)
-  //     .max(3)
-  //     .step(0.001)
-  //     .name('scale')
-  //     .onChange(value => {
-  //         glass.scale.set(value, value, value);
-  //     });
+      watchTweaks
+      .add(glass.rotation, "y")
+      .min(-3)
+      .max(3)
+      .step(0.001)
+      .name("rotation Y");
+    watchTweaks
+      .add(glass.rotation, "x")
+      .min(-3)
+      .max(3)
+      .step(0.001)
+      .name("rotation x");
+    watchTweaks
+      .add(glass.rotation, "z")
+      .min(-3)
+      .max(3)
+      .step(0.001)
+      .name("rotation z");
+
+      watchTweaks.add({ scale: glass.scale.x }, 'scale')
+      .min(-3)
+      .max(3)
+      .step(0.001)
+      .name('scale')
+      .onChange(value => {
+          glass.scale.set(value, value, value);
+      });
 });
 
 // Create a renderer
@@ -196,6 +244,12 @@ renderer.render(scene, camera);
 
 const tick = () => {
   renderer.render(scene, camera);
+  if(loadingAnimationComplete){
+    // 
+    // glass.rotation.x += 0.01;
+    glass.rotation.y += 0.01;
+    // glass.rotation.z += 0.01;
+  }
   requestAnimationFrame(tick);
 };
 
@@ -279,3 +333,25 @@ window.addEventListener("load", () => {
     }
   );
 });
+
+window.addEventListener('mousedown', (e) => {
+  isMouseDown= true;
+  mouse = { x: e.clientX, y: e.clientY };
+})
+window.addEventListener('mouseup', () => {
+  isMouseDown= false
+
+})
+window.addEventListener('mousemove', (e) => {
+  if(isMouseDown){
+    if(e.clientX > window.innerWidth * 0.62) {
+      const deltaX = e.clientX - mouse.x;
+  
+      // Update glass rotation based on mouse movement
+      glass.rotation.y += deltaX * 0.005; // Adjust rotation speed
+  
+      // Update the previous mouse position
+      mouse = { x: e.clientX, y: e.clientY };
+    }
+  }
+})
