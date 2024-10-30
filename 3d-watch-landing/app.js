@@ -60,14 +60,14 @@ const watchTweaks = gui.addFolder("Awesome Cube");
 const loader = new GLTFLoader();
 
 let glass;
-loader.load("./assets/apple-watch.glb", (gltf) => {
+loader.load("./public/apple-watch.glb", (gltf) => {
   glass = gltf.scene;
   const loadingBarTl = gsap.timeline();
 
   loadingBarTl.fromTo(
     ".js-loader-bottom-bar",
     {
-      width: "90%",
+      width: "99%",
     },
     {
       width: "100%",
@@ -319,7 +319,7 @@ window.addEventListener("load", () => {
     onUpdate: () => {
       // Check the current progress of the loading bar animation
       loadingProgressPercentage = Math.round(
-        Math.min(90, (loadLoadingBarTl.progress() / 1) * 100)
+        Math.min(99, (loadLoadingBarTl.progress() / 1) * 100)
       ); // Get the progress (0 to 1)
       loaderPercentage.textContent = `${loadingProgressPercentage}%`;
     },
@@ -331,7 +331,7 @@ window.addEventListener("load", () => {
       width: "0%",
     },
     {
-      width: "90%",
+      width: "99%",
       duration: 0.5,
     }
   );
