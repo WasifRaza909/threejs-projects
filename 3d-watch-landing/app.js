@@ -5,10 +5,14 @@ import GUI from "lil-gui";
 import gsap from "gsap";
 const gui = new GUI();
 gui.hide()
+
 // Constants
+
+const windowWidth = document.documentElement.getBoundingClientRect().width;
+const windowHeight = document.documentElement.getBoundingClientRect().height;
 const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
+  width: windowWidth,
+  height: windowHeight,
 };
 const defaultColorModel = "#a30000";
 let loadingAnimationComplete = false;
@@ -236,7 +240,7 @@ const canvas = document.getElementById("canvas");
 
 const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
 renderer.setSize(sizes.width, sizes.height);
-
+console.log(window.innerWidth, sizes.height);
 renderer.render(scene, camera);
 
 /**
@@ -364,3 +368,4 @@ window.addEventListener('mousemove', (e) => {
     }
   }
 })
+
