@@ -21,6 +21,7 @@ body {
 .main-wrapper {
   transition: background-color ease 0.2s;
   position: relative;
+  overflow: hidden;
 }
 .main-wrapper::before {
   content: "";

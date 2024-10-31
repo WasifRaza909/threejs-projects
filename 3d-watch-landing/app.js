@@ -106,6 +106,10 @@ loader.load("../apple-watch.glb", (gltf) => {
   glass.scale.set(1.5, 1.5, 1.5);
   glass.position.set(0.1, 0, 0);
   scene.add(glass);
+
+  const scaleValue = window.innerWidth > 1650 ? 1.9 : window.innerWidth > 1400 ? 1.3 : window.innerWidth > 1200 ? 1.3 : 1.2
+  const xPosition = window.innerWidth > 1400 ? 0.14 : window.innerWidth > 1200 ? 0.11 : window.innerWidth > 950 ? 0.1 : 0.07  
+
   loadingBarTl.fromTo(
     glass.scale,
     {
@@ -114,9 +118,9 @@ loader.load("../apple-watch.glb", (gltf) => {
       z: 6,
     },
     {
-      x: 1.9,
-      y: 1.9,
-      z: 1.9,
+      x: scaleValue,
+      y: scaleValue,
+      z: scaleValue,
       duration: 2,
     },"-=0.2"
   );
@@ -126,7 +130,7 @@ loader.load("../apple-watch.glb", (gltf) => {
       x: -1,
     },
     {
-      x: 0.14,
+      x: xPosition,
       y: -0.015,
       duration: 2,
     },"<"
