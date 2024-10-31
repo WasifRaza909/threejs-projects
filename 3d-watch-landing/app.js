@@ -60,7 +60,7 @@ const watchTweaks = gui.addFolder("Awesome Cube");
 const loader = new GLTFLoader();
 
 let glass;
-loader.load("./public/apple-watch.glb", (gltf) => {
+loader.load("../apple-watch.glb", (gltf) => {
   glass = gltf.scene;
   const loadingBarTl = gsap.timeline();
 
