@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 import React, { useRef, useEffect } from 'react'
 import { useGLTF,OrbitControls  } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
@@ -34,7 +35,6 @@ const Island = ({isRotating,setCurrentStage, setIsRotating, ...props}) => {
     const handlePointerMove = (e) => {
         e.stopPropagation()
         e.preventDefault()
-        console.log(1)
 
         if(isRotating) {
         const clientX = e.touches ? e.touces[0].clientX : e.clientX

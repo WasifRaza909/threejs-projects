@@ -1,2 +1,23 @@
-# Local Netlify folder
-.netlify
+# Dependencies
+node_modules/
+
+# Netlify local files
+.netlify/
+
+# Build outputs (optional, depending on framework)
+dist/
+build/
+.next/
+.nuxt/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
