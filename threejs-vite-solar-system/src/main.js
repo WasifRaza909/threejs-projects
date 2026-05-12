@@ -59,6 +59,17 @@ gui.add(settings, 'z', 0,100).step(0.02).name('Camera Z').onChange(value => {
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 
+let isDragging = false;
+controls.addEventListener('start', () => {
+  isDragging = true;
+  document.body.style.cursor = 'grabbing';
+})
+
+controls.addEventListener('end', () => {
+  isDragging = false;
+  document.body.style.cursor = 'default';
+})
+
 controls.addEventListener('change', () => {
   settings.x = camera.position.x;
   settings.y = camera.position.y;
@@ -124,6 +135,10 @@ function createRing(parent, inner, outer, color) {
   parent.add(ringMesh);
 }
 
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+
 orbitData.forEach((planet) => {
   const geometry = new THREE.RingGeometry(planet.radius - 0.05, planet.radius + 0.05, 128)
   
@@ -174,6 +189,21 @@ scene.add(pointLight)
 function animate() {
   requestAnimationFrame(animate)
 
+  // Ray Caster
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(scene.children, true);
+
+ if (!isDragging) {
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (intersects.length > 0) {
+      document.body.style.cursor = 'pointer';
+    } else {
+      document.body.style.cursor = 'grab';
+    }
+  }
+
   planetMeshes.forEach((p) => {
     p.angle += p.speed
     
@@ -193,3 +223,13 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix()
   renderer.setSize(window.innerWidth, window.innerHeight)
 })
+
+window.addEventListener('click', (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+});
+
+window.addEventListener('mousemove', (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+});
