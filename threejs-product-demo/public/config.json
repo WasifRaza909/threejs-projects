@@ -1,0 +1,14 @@
+{
+  "productName": "Dynamic 3D Customizer",
+  "price": "Interactive Demo",
+  "description": "Every detectable part of this model is listed below. Select a component to change its color in real-time.",
+  "modelUrl": "https://market-assets.fra1.cdn.digitaloceanspaces.com/market-assets/models/kitchen-pack/model.gltf",
+  "environment": "city",
+  "camera": {
+    "position": [0, 0, 2.5],
+    "minDistance": 1.2,
+    "maxDistance": 5
+  },
+  "isDynamic": true,
+  "configurables": []
+}

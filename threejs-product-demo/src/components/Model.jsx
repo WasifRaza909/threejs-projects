@@ -3,6 +3,82 @@ import { useGLTF } from '@react-three/drei';
 import { useConfiguratorStore } from '../store/useConfiguratorStore';
 import * as THREE from 'three';
 
+const GENERIC_NAMES = new Set(['mesh', 'object', 'node', 'primitive', 'scene']);
+
+const getMaterialList = (material) => {
+  if (!material) return [];
+  return Array.isArray(material) ? material.filter(Boolean) : [material];
+};
+
+const isPaintableMesh = (node) => {
+  return (node.isMesh || node.isSkinnedMesh || node.type === 'Mesh' || node.type === 'SkinnedMesh') && getMaterialList(node.material).length > 0;
+};
+
+const normalizeName = (name) => (name || '').trim();
+
+const getNodePath = (node, scene) => {
+  const parts = [];
+  let current = node;
+
+  while (current && current !== scene) {
+    const name = normalizeName(current.name);
+    if (name) parts.unshift(name);
+    current = current.parent;
+  }
+
+  return parts.join('/');
+};
+
+const makePartLabel = (rawName, index) => {
+  let cleanLabel = rawName
+    .replace(/(_\d+|\.\d+|-\d+)$/, '')
+    .replace(/^(mesh|node|primitive|obj|group|part|scene)[_-]/i, '')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_./-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!cleanLabel || cleanLabel.length < 2 || GENERIC_NAMES.has(cleanLabel.toLowerCase())) {
+    cleanLabel = `Component ${index + 1}`;
+  }
+
+  return cleanLabel.charAt(0).toUpperCase() + cleanLabel.slice(1);
+};
+
+const cloneMaterialsOnce = (node) => {
+  if (node.userData.configuratorMaterialsCloned) return;
+
+  if (Array.isArray(node.material)) {
+    node.material = node.material.map((material) => material?.clone?.() || material);
+  } else if (node.material?.clone) {
+    node.material = node.material.clone();
+  }
+
+  node.userData.configuratorMaterialsCloned = true;
+};
+
+const applyColorToMaterial = (material, color, configurable, selectedOption) => {
+  if (!material) return;
+
+  if (material.color) {
+    material.color.set(color);
+  }
+
+  material.roughness = selectedOption?.roughness ?? configurable.roughness ?? material.roughness ?? 0.3;
+  material.metalness = selectedOption?.metalness ?? configurable.metalness ?? material.metalness ?? 0.15;
+
+  if ('clearcoat' in material) {
+    material.clearcoat = selectedOption?.clearcoat ?? configurable.clearcoat ?? material.clearcoat ?? 0;
+  }
+
+  if ('clearcoatRoughness' in material) {
+    material.clearcoatRoughness = selectedOption?.clearcoatRoughness ?? configurable.clearcoatRoughness ?? material.clearcoatRoughness ?? 0;
+  }
+
+  material.side = THREE.DoubleSide;
+  material.needsUpdate = true;
+};
+
 /**
  * Model Component
  * Loads and renders a GLTF/GLB model with robust error handling.
@@ -11,11 +87,18 @@ export function Model({ url, configurables }) {
   const setLoading = useConfiguratorStore((state) => state.setLoading);
   const setLoadError = useConfiguratorStore((state) => state.setLoadError);
   const setDynamicConfigurables = useConfiguratorStore((state) => state.setDynamicConfigurables);
+  const setModelCenter = useConfiguratorStore((state) => state.setModelCenter);
   const config = useConfiguratorStore((state) => state.config);
+  const initializedRef = React.useRef(false);
   
   // Use useGLTF to load the model. Suspension and errors are handled by 
   // the parent Suspense and ErrorBoundary components.
   const { scene } = useGLTF(url);
+
+  // Reset initialization ref if the URL changes
+  useEffect(() => {
+    initializedRef.current = false;
+  }, [url]);
 
   // Select active options from our Zustand store
   const selectedOptions = useConfiguratorStore((state) => state.selectedOptions);
@@ -23,78 +106,112 @@ export function Model({ url, configurables }) {
   // Notify the store that the model has successfully loaded
   useEffect(() => {
     if (scene) {
-      setLoading(false);
+      console.log("Model: Scene loaded, initializing discovery...", { name: scene.name });
 
-      // If dynamic config is enabled and we haven't populated configurables yet, extract meshes and update store
-      if (config?.isDynamic && (!configurables || configurables.length === 0)) {
-        const meshes = [];
-        scene.traverse((child) => {
-          if (child.isMesh && child.name && !meshes.includes(child.name)) {
-            meshes.push(child.name);
+      // Calculate the bounding box center
+      const box = new THREE.Box3().setFromObject(scene);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      setModelCenter([center.x, center.y, center.z]);
+
+      const shouldDiscoverParts = config?.isDynamic || !configurables || configurables.length === 0;
+
+      // Dynamic discovery logic
+      if (shouldDiscoverParts && !initializedRef.current) {
+        const discoveredParts = [];
+        const usedIds = new Set();
+
+        // Force an update of the scene's world matrices to ensure all data is ready
+        scene.updateMatrixWorld(true);
+
+        scene.traverse((node) => {
+          if (!isPaintableMesh(node)) return;
+
+          const index = discoveredParts.length;
+          const materials = getMaterialList(node.material);
+          const nodePath = getNodePath(node, scene);
+          const meshName = normalizeName(node.name);
+          const parentName = normalizeName(node.parent?.name);
+          const materialName = normalizeName(materials[0]?.name);
+          const rawName = meshName || materialName || parentName || `Component ${index + 1}`;
+          let partId = nodePath || rawName || `part-${index + 1}`;
+
+          if (GENERIC_NAMES.has(partId.toLowerCase())) {
+            partId = `${partId}-${index + 1}`;
           }
+
+          let uniqueId = partId;
+          let suffix = 2;
+          while (usedIds.has(uniqueId)) {
+            uniqueId = `${partId}-${suffix}`;
+            suffix += 1;
+          }
+
+          usedIds.add(uniqueId);
+          node.userData.configuratorPartId = uniqueId;
+          node.userData.configuratorPartName = rawName;
+          cloneMaterialsOnce(node);
+
+          const firstColor = getMaterialList(node.material).find((material) => material?.color)?.color;
+          const defaultColor = firstColor ? `#${firstColor.getHexString().toUpperCase()}` : '#EAE6DF';
+
+          console.log(`Model: Discovered part ${index + 1}: "${uniqueId}" (Type: ${node.type})`);
+          discoveredParts.push({
+            id: uniqueId,
+            meshName: meshName || uniqueId,
+            label: makePartLabel(rawName, index),
+            default: defaultColor,
+            materialName,
+            nodePath,
+          });
         });
-        
-        // Only update if we found meshes
-        if (meshes.length > 0) {
-          setDynamicConfigurables(meshes);
+
+        console.log(`Model: Discovery complete. Found ${discoveredParts.length} parts.`);
+
+        if (discoveredParts.length > 0) {
+          initializedRef.current = true;
+          setDynamicConfigurables(discoveredParts);
+        } else {
+          console.warn("Model: No customizeable parts found in the scene.");
+          setLoading(false);
         }
+      } else if (!shouldDiscoverParts) {
+        setLoading(false);
       }
     }
-  }, [scene, setLoading, config?.isDynamic, setDynamicConfigurables]);
+  }, [scene, setLoading, config?.isDynamic, configurables, setDynamicConfigurables, setModelCenter]);
 
   // Apply customizations to the meshes
   useEffect(() => {
-    if (!scene) return;
+    if (!scene || !configurables || configurables.length === 0) return;
+    
+    console.log("Applying customizations to meshes...", selectedOptions);
     
     scene.traverse((child) => {
-      if (child.isMesh) {
+      if (isPaintableMesh(child)) {
         // Enable premium shadow map behaviors for all meshes
         child.castShadow = true;
         child.receiveShadow = true;
+        cloneMaterialsOnce(child);
 
-        // Find if this specific mesh is designated as configurable in our configuration JSON
+        // Find if this specific mesh is designated as configurable
         const configurable = configurables.find(
           (c) => 
-            child.name.toLowerCase() === c.meshName.toLowerCase() ||
-            child.name.toLowerCase().includes(c.meshName.toLowerCase()) ||
-            c.meshName.toLowerCase().includes(child.name.toLowerCase())
+            child.userData.configuratorPartId === c.id ||
+            child.userData.configuratorPartId === c.targetId ||
+            child.name === c.id || 
+            child.name === c.meshName ||
+            (child.name && c.meshName && child.name.toLowerCase() === c.meshName.toLowerCase())
         );
 
         if (configurable) {
           const selectedColor = selectedOptions[configurable.id];
           
           if (selectedColor && child.material) {
-            // Clone the material to ensure color changes only affect this specific mesh instance
-            child.material = child.material.clone();
-            
-            // Set the new color using Three's Color class
-            child.material.color = new THREE.Color(selectedColor);
-            
-            // Apply customized realistic physical properties
-            // If they are specified in the config, use them; otherwise apply realistic defaults
-            child.material.roughness = configurable.roughness !== undefined ? configurable.roughness : 0.3;
-            child.material.metalness = configurable.metalness !== undefined ? configurable.metalness : 0.15;
-            
-            // Ensure material is clean and double-sided for premium look
-            child.material.side = THREE.DoubleSide;
-            
-            // If the color option dictates texture or transparency, we can customize here
-            if (configurable.type === 'material') {
-              // Custom material properties (e.g. leather, fabric, metal)
-              const selectedOptDetails = configurable.options.find(o => o.value === selectedColor);
-              if (selectedOptDetails) {
-                child.material.roughness = selectedOptDetails.roughness !== undefined ? selectedOptDetails.roughness : child.material.roughness;
-                child.material.metalness = selectedOptDetails.metalness !== undefined ? selectedOptDetails.metalness : child.material.metalness;
-                child.material.clearcoat = selectedOptDetails.clearcoat !== undefined ? selectedOptDetails.clearcoat : 0.0;
-                child.material.clearcoatRoughness = selectedOptDetails.clearcoatRoughness !== undefined ? selectedOptDetails.clearcoatRoughness : 0.0;
-              }
-            }
-          }
-        } else {
-          // If the mesh is not configurable, still clone its material to prevent reference sharing issues,
-          // and apply standard shadows.
-          if (child.material) {
-            child.material = child.material.clone();
+            const selectedOptDetails = configurable.options?.find(o => o.value === selectedColor);
+            getMaterialList(child.material).forEach((material) => {
+              applyColorToMaterial(material, selectedColor, configurable, selectedOptDetails);
+            });
           }
         }
       }
@@ -117,11 +234,17 @@ export function Model({ url, configurables }) {
  */
 export function ProceduralModel({ configurables }) {
   const selectedOptions = useConfiguratorStore((state) => state.selectedOptions);
+  const setModelCenter = useConfiguratorStore((state) => state.setModelCenter);
+
+  // Set center to origin for the procedural model
+  useEffect(() => {
+    setModelCenter([0, 0, 0]);
+  }, [setModelCenter]);
   
   // Helper to resolve colors and physical properties for primitive meshes
   const getMaterialProps = (id, fallbackColor) => {
     const selectedColor = selectedOptions[id] || fallbackColor;
-    const configurable = configurables.find(c => c.id === id);
+    const configurable = configurables?.find(c => c.id === id);
     
     let roughness = 0.45;
     let metalness = 0.1;
@@ -245,7 +368,3 @@ export function ProceduralModel({ configurables }) {
     </group>
   );
 }
-
-
-// Preload standard models to speed up initial transition times
-// E.g. useGLTF.preload(defaultUrl)

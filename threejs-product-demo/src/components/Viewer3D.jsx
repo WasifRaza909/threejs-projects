@@ -156,6 +156,25 @@ function SafeEnvironment({ preset }) {
 }
 
 /**
+ * OrbitTargetUpdater Component
+ * Syncs the OrbitControls target with the calculated model center from the store.
+ */
+function OrbitTargetUpdater() {
+  const modelCenter = useConfiguratorStore((state) => state.modelCenter);
+  const { controls } = useThree();
+
+  useEffect(() => {
+    if (controls && modelCenter) {
+      // Set the orbit controls target to the center of the loaded model
+      controls.target.set(modelCenter[0], modelCenter[1], modelCenter[2]);
+      controls.update();
+    }
+  }, [modelCenter, controls]);
+
+  return null;
+}
+
+/**
  * Viewer3D Component
  * Sets up the React Three Fiber Canvas with lighting, environment,
  * shadows, bounds centering, camera controls, and the loaded model.
@@ -183,6 +202,9 @@ export function Viewer3D() {
         >
           {/* Base Background Color in case of transparency issues */}
           <color attach="background" args={["#FAF8F5"]} />
+
+          {/* Dynamically update OrbitControls target to model center */}
+          <OrbitTargetUpdater />
 
           {/* Soft Ambient Light for base illumination */}
           <ambientLight intensity={0.65} />
@@ -223,17 +245,13 @@ export function Viewer3D() {
               onError={() => setLoadError(true)}
               fallback={
                 <Bounds fit clip observe margin={1.2}>
-                  <Center>
-                    <ProceduralModel configurables={config.configurables} />
-                  </Center>
+                  <ProceduralModel configurables={config.configurables} />
                 </Bounds>
               }
             >
               {/* Bounds automatically fits the camera to frame the loaded model regardless of its size */}
               <Bounds fit clip observe margin={1.15}>
-                <Center>
-                  <Model url={config.modelUrl} configurables={config.configurables} />
-                </Center>
+                <Model url={config.modelUrl} configurables={config.configurables} />
               </Bounds>
             </ModelErrorBoundary>
           </Suspense>

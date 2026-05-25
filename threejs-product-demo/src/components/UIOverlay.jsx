@@ -22,6 +22,8 @@ export function UIOverlay() {
 
   if (!config) return null;
 
+  const configurables = config.configurables || [];
+
   // Resolve dynamic values depending on model loading status (standard shoe vs fallback armchair)
   const productName = hasLoadError ? "The Bauhaus Armchair" : (config.productName || "Customizer MVP");
   const price = hasLoadError ? "$395.00" : (config.price || "$249.00");
@@ -92,9 +94,16 @@ export function UIOverlay() {
 
         {/* Configuration Options (Scrollable area) */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 scrollbar-thin scrollbar-thumb-stone-200">
-          {config.configurables.map((configurable) => {
+          {configurables.length === 0 && !isLoading && (
+            <div className="text-center py-10">
+              <Sparkles className="w-8 h-8 text-stone-200 mx-auto mb-3" />
+              <p className="text-xs text-stone-400">Scanning model for configurable parts...</p>
+            </div>
+          )}
+
+          {configurables.map((configurable) => {
             const selectedVal = selectedOptions[configurable.id];
-            const currentOptionObj = configurable.options.find(
+            const currentOptionObj = configurable.options?.find(
               (o) => o.value === selectedVal
             );
 
@@ -111,9 +120,9 @@ export function UIOverlay() {
 
                 {/* Swatches Container */}
                 <div className="flex flex-wrap gap-2 md:gap-3">
-                  {configurable.options.map((option) => {
+                  {configurable.options?.map((option) => {
                     const isSelected = selectedVal === option.value;
-                    const isColorType = configurable.type !== 'material' || option.value.startsWith('#');
+                    const isColorType = configurable.type !== 'material' || option.value?.startsWith('#');
 
                     return (
                       <button
@@ -173,22 +182,6 @@ export function UIOverlay() {
         </div>
 
       </div>
-
-      {/* Loading Overlay (if model loading is ongoing and progress is not complete) */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm pointer-events-auto flex flex-col items-center justify-center z-50 transition-opacity duration-300">
-          <div className="flex flex-col items-center justify-center p-8 bg-white rounded-3xl shadow-premium border border-stone-100 max-w-sm text-center">
-            <div className="relative flex items-center justify-center mb-6">
-              <div className="w-16 h-16 border-4 border-stone-100 border-t-[#5A2611] rounded-full animate-spin"></div>
-              <span className="absolute text-xs font-bold text-stone-700">{loadingProgress}%</span>
-            </div>
-            <h3 className="text-md font-semibold text-stone-900 mb-1">Loading Creative Assets</h3>
-            <p className="text-xs text-stone-400 leading-relaxed">
-              Rendering full 3D viewport, applying realistic materials, and preparing the config tools.
-            </p>
-          </div>
-        </div>
-      )}
 
     </div>
   );

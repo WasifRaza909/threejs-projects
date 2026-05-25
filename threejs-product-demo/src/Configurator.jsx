@@ -13,13 +13,17 @@ import { UIOverlay } from './components/UIOverlay';
  */
 export default function Configurator({ config }) {
   const setConfig = useConfiguratorStore((state) => state.setConfig);
+  const loadConfig = useConfiguratorStore((state) => state.loadConfig);
 
   // Initialize the Zustand store config on mount or when config changes
   useEffect(() => {
     if (config) {
       setConfig(config);
+    } else {
+      // If no config is passed as a prop, load from the public/config.json file
+      loadConfig();
     }
-  }, [config, setConfig]);
+  }, [config, setConfig, loadConfig]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#FAF6F0] flex flex-col md:flex-row">
