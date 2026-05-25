@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply select-none bg-[#FAF6F0];
+  }
+}
+
+/* Custom premium thin scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(90, 38, 17, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(90, 38, 17, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(90, 38, 17, 0.3);
+}
+
+/* Smooth transitions for active configuration controls */
+.transition-config {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}

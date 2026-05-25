@@ -47,7 +47,7 @@ let stageIndex = 0;
 
 function animateLoader() {
   const stage = fakeStages[stageIndex];
-  currentProgress += (stage.target - currentProgress) * 0.1;
+  currentProgress += (stage.target - currentProgress) * 0.08;
 
   barFill.style.width   = `${currentProgress}%`;
   percentEl.textContent = `${Math.round(currentProgress)}%`;
