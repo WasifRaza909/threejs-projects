@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
+import { useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { useConfiguratorStore } from '../store/useConfiguratorStore';
 import * as THREE from 'three';
@@ -79,6 +80,19 @@ const applyColorToMaterial = (material, color, configurable, selectedOption) => 
   material.needsUpdate = true;
 };
 
+const getObjectCenter = (object) => {
+  if (!object) return null;
+
+  object.updateWorldMatrix(true, true);
+
+  const box = new THREE.Box3().setFromObject(object);
+  if (box.isEmpty()) return null;
+
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  return [center.x, center.y, center.z];
+};
+
 /**
  * Model Component
  * Loads and renders a GLTF/GLB model with robust error handling.
@@ -86,10 +100,13 @@ const applyColorToMaterial = (material, color, configurable, selectedOption) => 
 export function Model({ url, configurables }) {
   const setLoading = useConfiguratorStore((state) => state.setLoading);
   const setLoadError = useConfiguratorStore((state) => state.setLoadError);
+  const setLoadingProgress = useConfiguratorStore((state) => state.setLoadingProgress);
   const setDynamicConfigurables = useConfiguratorStore((state) => state.setDynamicConfigurables);
   const setModelCenter = useConfiguratorStore((state) => state.setModelCenter);
   const config = useConfiguratorStore((state) => state.config);
+  const size = useThree((state) => state.size);
   const initializedRef = React.useRef(false);
+  const groupRef = React.useRef(null);
   
   // Use useGLTF to load the model. Suspension and errors are handled by 
   // the parent Suspense and ErrorBoundary components.
@@ -107,12 +124,7 @@ export function Model({ url, configurables }) {
   useEffect(() => {
     if (scene) {
       console.log("Model: Scene loaded, initializing discovery...", { name: scene.name });
-
-      // Calculate the bounding box center
-      const box = new THREE.Box3().setFromObject(scene);
-      const center = new THREE.Vector3();
-      box.getCenter(center);
-      setModelCenter([center.x, center.y, center.z]);
+      setLoadingProgress(96);
 
       const shouldDiscoverParts = config?.isDynamic || !configurables || configurables.length === 0;
 
@@ -173,13 +185,44 @@ export function Model({ url, configurables }) {
           setDynamicConfigurables(discoveredParts);
         } else {
           console.warn("Model: No customizeable parts found in the scene.");
+          setLoadingProgress(100);
           setLoading(false);
         }
       } else if (!shouldDiscoverParts) {
+        setLoadingProgress(100);
         setLoading(false);
       }
     }
-  }, [scene, setLoading, config?.isDynamic, configurables, setDynamicConfigurables, setModelCenter]);
+  }, [scene, setLoading, setLoadingProgress, config?.isDynamic, configurables, setDynamicConfigurables]);
+
+  useLayoutEffect(() => {
+    let secondFrameId;
+    const frameId = requestAnimationFrame(() => {
+      secondFrameId = requestAnimationFrame(() => {
+        const center = getObjectCenter(groupRef.current || scene);
+        if (center) {
+          setModelCenter(center);
+        }
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      cancelAnimationFrame(secondFrameId);
+    };
+  }, [scene, setModelCenter, size.width, size.height]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const center = getObjectCenter(groupRef.current || scene);
+      if (center) {
+        setModelCenter(center);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [scene, setModelCenter]);
 
   // Apply customizations to the meshes
   useEffect(() => {
@@ -220,7 +263,7 @@ export function Model({ url, configurables }) {
 
   // Render the Three.js scene object using primitive
   return (
-    <group dispose={null} name="product-model">
+    <group ref={groupRef} dispose={null} name="product-model">
       <primitive object={scene} />
     </group>
   );
@@ -235,10 +278,46 @@ export function Model({ url, configurables }) {
 export function ProceduralModel({ configurables }) {
   const selectedOptions = useConfiguratorStore((state) => state.selectedOptions);
   const setModelCenter = useConfiguratorStore((state) => state.setModelCenter);
+  const setLoadingProgress = useConfiguratorStore((state) => state.setLoadingProgress);
+  const ensureFallbackConfig = useConfiguratorStore((state) => state.ensureFallbackConfig);
+  const size = useThree((state) => state.size);
+  const groupRef = React.useRef(null);
 
-  // Set center to origin for the procedural model
   useEffect(() => {
-    setModelCenter([0, 0, 0]);
+    setLoadingProgress(100);
+
+    if (!configurables || configurables.length === 0) {
+      ensureFallbackConfig();
+    }
+  }, [configurables, ensureFallbackConfig, setLoadingProgress]);
+
+  useLayoutEffect(() => {
+    let secondFrameId;
+    const frameId = requestAnimationFrame(() => {
+      secondFrameId = requestAnimationFrame(() => {
+        const center = getObjectCenter(groupRef.current);
+        if (center) {
+          setModelCenter(center);
+        }
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      cancelAnimationFrame(secondFrameId);
+    };
+  }, [setModelCenter, size.width, size.height]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const center = getObjectCenter(groupRef.current);
+      if (center) {
+        setModelCenter(center);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [setModelCenter]);
   
   // Helper to resolve colors and physical properties for primitive meshes
@@ -280,7 +359,7 @@ export function ProceduralModel({ configurables }) {
   const capsMaterial = getMaterialProps('caps', '#1A1A1A'); // Metallic tips
 
   return (
-    <group position={[0, 0, 0]} name="product-model">
+    <group ref={groupRef} position={[0, 0, 0]} name="product-model">
       {/* 1. SEAT CUSHION (Main upper mapping) */}
       <mesh position={[0, -0.05, 0]} castShadow receiveShadow>
         <boxGeometry args={[1.1, 0.16, 1.1]} />

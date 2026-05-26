@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, Center, Bounds, Environment, ContactShadows, Html, useProgress } from '@react-three/drei';
+import { OrbitControls, Bounds, Environment, ContactShadows, Html, useProgress } from '@react-three/drei';
 import { Model, ProceduralModel } from './Model';
 import { useConfiguratorStore } from '../store/useConfiguratorStore';
 
@@ -38,13 +38,35 @@ class ModelErrorBoundary extends React.Component {
  * as a luxury minimalist loader inside the R3F canvas.
  */
 function LoaderHtml() {
-  const { progress } = useProgress();
+  const { active, progress } = useProgress();
   const setLoadingProgress = useConfiguratorStore((state) => state.setLoadingProgress);
+  const [displayProgress, setDisplayProgress] = useState(8);
 
-  // Sync loading progress with global Zustand store
   useEffect(() => {
-    setLoadingProgress(Math.round(progress));
-  }, [progress, setLoadingProgress]);
+    if (!active && progress >= 100) {
+      setDisplayProgress(100);
+      setLoadingProgress(100);
+      return;
+    }
+
+    const targetProgress = Number.isFinite(progress) && progress > 0
+      ? Math.min(progress, 95)
+      : null;
+
+    const timer = window.setInterval(() => {
+      setDisplayProgress((current) => {
+        const target = targetProgress ?? Math.min(94, current + (current < 55 ? 4 : current < 80 ? 2 : 1));
+        const next = Math.min(95, Math.max(current, current + Math.max(1, Math.round((target - current) * 0.25))));
+
+        setLoadingProgress(next);
+        return next;
+      });
+    }, 180);
+
+    return () => window.clearInterval(timer);
+  }, [active, progress, setLoadingProgress]);
+
+  const roundedProgress = Math.min(100, Math.round(displayProgress));
 
   return (
     <Html center>
@@ -53,7 +75,7 @@ function LoaderHtml() {
           {/* Animated luxury spinner */}
           <div className="w-12 h-12 border-[3px] border-stone-200 border-t-[#5A2611] rounded-full animate-spin"></div>
           <div className="absolute text-[10px] font-bold text-stone-700">
-            {Math.round(progress)}%
+            {roundedProgress}%
           </div>
         </div>
         <span className="mt-4 text-[10px] font-semibold text-stone-500 tracking-widest uppercase">

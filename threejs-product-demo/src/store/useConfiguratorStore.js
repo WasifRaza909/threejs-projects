@@ -127,7 +127,7 @@ export const useConfiguratorStore = create((set, get) => ({
       config, 
       selectedOptions: initialOptions,
       isLoading: true, // Remain in loading state while assets/scan complete
-      loadingProgress: 0,
+      loadingProgress: 5,
       hasLoadError: false,
       modelCenter: [0, 0, 0]
     });
@@ -139,7 +139,7 @@ export const useConfiguratorStore = create((set, get) => ({
   // Load configuration from an external JSON file
   loadConfig: async (url = '/config.json') => {
     console.log(`Store: Loading config from ${url}`);
-    set({ isLoading: true, hasLoadError: false });
+    set({ isLoading: true, loadingProgress: 3, hasLoadError: false });
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error(`Failed to load config: ${response.statusText}`);
@@ -173,22 +173,28 @@ export const useConfiguratorStore = create((set, get) => ({
   // Update GLTF loading state
   setLoading: (isLoading) => set({ isLoading }),
   setLoadingProgress: (loadingProgress) => set({ loadingProgress }),
+  ensureFallbackConfig: () => {
+    const { config } = get();
+    const fallbackConfig = createFallbackConfig(config || {});
+
+    set({
+      config: fallbackConfig,
+      selectedOptions: getDefaultOptions(fallbackConfig.configurables),
+      hasLoadError: true,
+      isLoading: false,
+      loadingProgress: 100
+    });
+  },
   setLoadError: (hasLoadError) => {
     if (hasLoadError) {
       const { config } = get();
       // If we have an error and no configurables, ensure we show the full fallback
       if (config && (!config.configurables || config.configurables.length === 0)) {
-        const fallbackConfig = createFallbackConfig(config);
-        set({
-          config: fallbackConfig,
-          selectedOptions: getDefaultOptions(fallbackConfig.configurables),
-          hasLoadError: true,
-          isLoading: false
-        });
+        get().ensureFallbackConfig();
         return;
       }
     }
-    set({ hasLoadError, isLoading: false });
+    set({ hasLoadError, isLoading: false, loadingProgress: hasLoadError ? 100 : get().loadingProgress });
   },
 
   // Set dynamic configurables based on meshes found in the model
@@ -277,7 +283,8 @@ export const useConfiguratorStore = create((set, get) => ({
     set({ 
       config: newConfig, 
       selectedOptions: initialOptions,
-      isLoading: false
+      isLoading: false,
+      loadingProgress: 100
     });
   },
 
