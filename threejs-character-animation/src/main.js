@@ -13,8 +13,8 @@ const progressFillEl  = document.getElementById('progress-fill');
 const progressPctEl   = document.getElementById('progress-pct');
 const progressStatusEl = document.getElementById('progress-status');
 
-// 13 assets: sky.exr · soccer-goal.glb · character.fbx · 10 animations
-const TOTAL_ASSETS = 13;
+// 14 assets: sky.exr · soccer-goal.glb · character.fbx · 10 animations · grass texture
+const TOTAL_ASSETS = 14;
 let assetsLoaded   = 0;
 let fakeProgress   = 0;
 let loaderFinished = false;
@@ -90,10 +90,10 @@ document.body.appendChild(renderer.domElement);
 // new OrbitControls(camera, renderer.domElement);
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
 directionalLight.position.set(5, 10, 5);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
@@ -167,11 +167,25 @@ function createPitchLinesTexture() {
   return new THREE.CanvasTexture(canvas);
 }
 
+const textureLoader = new THREE.TextureLoader();
+
 // Ground — add your grass texture here via `map: grassTexture`
+const grassTexture = textureLoader.load('/models/textures/grass-texture.jpg', () => {
+  onAssetLoaded('Field grass ready...');
+});
+grassTexture.wrapS = THREE.RepeatWrapping;
+grassTexture.wrapT = THREE.RepeatWrapping;
+grassTexture.repeat.set(10, 20); // Tile the texture
+grassTexture.colorSpace = THREE.SRGBColorSpace; // Correct color rendering
+grassTexture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // Sharpness at angles
+
 const plane = new THREE.Mesh(
   new THREE.PlaneGeometry(60, 120),
   new THREE.MeshStandardMaterial({
-    color: "#004126",
+    map: grassTexture,
+    color: "#004126", // Dark green tint
+    roughness: 0.9,
+    metalness: 0.0
   })
 );
 
@@ -300,7 +314,6 @@ world.createCollider(endWallDesc).setTranslation({ x: 0, y: wallHeight, z: 60 + 
 let football;
 let footballBody;
 const ballRadius = 0.2;
-const textureLoader = new THREE.TextureLoader();
 const ballTexture = textureLoader.load('/models/textures/football-texture.jpg');
 
 // Ensure correct color space and sharp mapping
