@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wave Mesh — Effect 02</title>
+
+<!--
+  ============================================================================
+  WAVE MESH — Three.js Hero Background (Effect 02)
+  ============================================================================
+  A tilted wireframe plane animated with a two-frequency sine wave, giving an
+  organic "ocean surface" look. A second, fainter plane sits just behind it to
+  add depth layering. The whole field reacts to the mouse with subtle parallax.
+
+  ---------------------------------------------------------------------------
+  CUSTOMISATION OPTIONS (see the CONFIG block in the script below)
+  ---------------------------------------------------------------------------
+    • Wave SPEED      → CONFIG.timeStep      (per-frame time increment; higher = faster)
+    • Wave AMPLITUDE  → CONFIG.ampX / CONFIG.ampY (height of each sine component)
+    • Wave FREQUENCY  → CONFIG.freqX / CONFIG.freqY (tightness of the ripples)
+    • COLOUR          → CONFIG.color         (wireframe line colour, hex)
+    • OPACITY         → CONFIG.opacityMain / CONFIG.opacityBack (front/back planes)
+    • MOUSE PARALLAX  → CONFIG.lerpFactor    (smoothing; lower = laggier/smoother)
+  ============================================================================
+-->
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    /* Transparent so the z-index:-1 canvas behind the body is not painted over.
+       The dark navy comes from the renderer clear colour instead. */
+    background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  #scene {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    display: block;
+  }
+
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 1.5rem;
+    pointer-events: none;
+  }
+
+  .hero h1 {
+    color: #ffffff;
+    font-size: clamp(2.2rem, 7vw, 5.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 1.2rem;
+    text-shadow: 0 2px 40px rgba(0, 229, 204, 0.25);
+  }
+
+  .hero p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: clamp(0.95rem, 2.2vw, 1.3rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    margin-bottom: 2.4rem;
+  }
+
+  .cta {
+    pointer-events: auto;
+    display: inline-block;
+    color: #ffffff;
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.85);
+    border-radius: 999px;
+    padding: 0.85rem 2.4rem;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
+  }
+
+  .cta:hover {
+    background: #ffffff;
+    color: #020c14;
+    transform: translateY(-2px);
+  }
+</style>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+<main class="hero">
+  <h1>Wave Mesh</h1>
+  <p>Three.js Hero Background — Effect 02</p>
+  <a href="#" class="cta">Get Started</a>
+</main>
+
+<!-- Three.js r158 via CDN import map -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+  import * as THREE from 'three';
+
+  // ---- CONFIG: tweak these to customise the effect ----
+  const CONFIG = {
+    timeStep: 0.007,        // wave speed (per-frame time increment)
+    ampX: 0.9,              // amplitude of the x-driven wave
+    ampY: 0.6,              // amplitude of the y-driven wave
+    freqX: 0.55,            // frequency of the x-driven wave
+    freqY: 0.45,            // frequency of the y-driven wave
+    color: 0x00e5cc,        // wireframe colour
+    opacityMain: 0.35,      // front plane opacity
+    opacityBack: 0.12,      // back (depth) plane opacity
+    lerpFactor: 0.03        // mouse parallax smoothing
+  };
+
+  const canvas = document.getElementById('scene');
+  const isMobile = window.innerWidth < 768;
+
+  // ---- Renderer ----
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x020c14, 1);
+
+  // ---- Scene & Camera ----
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x020c14);
+
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 1, 6);
+  camera.lookAt(0, 0, 0);
+
+  // ---- Plane factory ----
+  // On mobile, drop the segment count for performance.
+  const SEGMENTS = isMobile ? 35 : 70;
+
+  function makeWavePlane(opacity, zOffset) {
+    const geometry = new THREE.PlaneGeometry(22, 22, SEGMENTS, SEGMENTS);
+    const material = new THREE.MeshBasicMaterial({
+      wireframe: true,
+      color: CONFIG.color,
+      transparent: true,
+      opacity: opacity
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.x = -Math.PI * 0.42; // tilt toward the viewer like an ocean surface
+    mesh.position.z = zOffset;
+
+    // Cache the original x/y of every vertex (in local plane space, pre-wave)
+    const pos = geometry.attributes.position;
+    const originals = new Float32Array(pos.count * 2);
+    for (let i = 0; i < pos.count; i++) {
+      originals[i * 2]     = pos.getX(i);
+      originals[i * 2 + 1] = pos.getY(i);
+    }
+    geometry.userData.originals = originals;
+
+    return mesh;
+  }
+
+  // Main (front) plane and a fainter back plane for depth layering.
+  const mainPlane = makeWavePlane(CONFIG.opacityMain, 0);
+  const backPlane = makeWavePlane(CONFIG.opacityBack, -0.5);
+  scene.add(mainPlane);
+  scene.add(backPlane);
+
+  // ---- Apply the two-frequency wave to a plane's vertices ----
+  function applyWave(mesh, time) {
+    const geometry = mesh.geometry;
+    const pos = geometry.attributes.position;
+    const originals = geometry.userData.originals;
+
+    for (let i = 0; i < pos.count; i++) {
+      const x = originals[i * 2];
+      const y = originals[i * 2 + 1];
+      const z =
+        Math.sin(x * CONFIG.freqX + time) * CONFIG.ampX +
+        Math.sin(y * CONFIG.freqY + time * 0.75) * CONFIG.ampY;
+      pos.setZ(i, z);
+    }
+
+    pos.needsUpdate = true;
+    geometry.computeVertexNormals();
+  }
+
+  // ---- Mouse parallax ----
+  const mouse = { x: 0, y: 0 };
+  if (!isMobile) {
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+  }
+
+  // ---- Animation loop ----
+  let time = 0;
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    time += CONFIG.timeStep;
+
+    // Front plane animates at full speed; back plane runs slower for depth.
+    applyWave(mainPlane, time);
+    applyWave(backPlane, time * 0.6);
+
+    if (!isMobile) {
+      // Subtle Z tilt + camera drift, smoothly lagging behind the mouse.
+      const targetRotZ = mouse.x * 0.04;
+      mainPlane.rotation.z += (targetRotZ - mainPlane.rotation.z) * CONFIG.lerpFactor;
+      backPlane.rotation.z += (targetRotZ - backPlane.rotation.z) * CONFIG.lerpFactor;
+
+      const targetCamX = mouse.x * 0.3;
+      camera.position.x += (targetCamX - camera.position.x) * CONFIG.lerpFactor;
+      camera.lookAt(0, 0, 0);
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // ---- Resize handling ----
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+
+</body>
+</html>
