@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>06 — Shader Gradient</title>
+
+  <!--
+    TUNING GUIDE
+    ─────────────────────────────────────────────────────────────────────────────
+    Colours       →  hex constants c1–c5 in the fragment shader (search "palette")
+    Speed         →  uTime increment in animate() — 0.008 is slow/elegant,
+                     0.02+ gives Stripe's faster churn
+    Mouse pull    →  the * 2.0 / * 1.5 multipliers on uMouse in layer1/layer2
+    Wave density  →  the 3.0 / 2.5 / 2.0 frequency multipliers in each layer
+    Vignette      →  smoothstep(0.45, 0.0, dist) — lower 0.45 → tighter vignette
+    Layer blend   →  mix() weights in "colour composition" section
+  -->
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a1a;
+      color: #ffffff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+    }
+
+    .overlay {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 1rem;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .overlay h1 {
+      font-size: clamp(2.5rem, 8vw, 6rem);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ffffff;
+      /* Subtle shadow so text reads against any gradient phase */
+      text-shadow:
+        0 2px 40px rgba(0, 0, 0, 0.55),
+        0 0  80px rgba(0, 0, 0, 0.3);
+    }
+
+    .overlay p {
+      font-size: clamp(0.85rem, 2vw, 1.1rem);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.55);
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+
+  <div class="overlay">
+    <h1>Shader Gradient</h1>
+    <p>Three.js Hero Background &mdash; Effect 06</p>
+  </div>
+
+  <!-- ── Vertex shader ──────────────────────────────────────────────────────── -->
+  <script id="vert" type="x-shader/x-vertex">
+    varying vec2 vUv;
+
+    void main() {
+      vUv = uv;
+      // Position is already in clip space (-1..1) on a PlaneGeometry(2,2),
+      // so we skip the usual modelViewProjection multiply.
+      gl_Position = vec4(position, 1.0);
+    }
+  </script>
+
+  <!-- ── Fragment shader ───────────────────────────────────────────────────── -->
+  <!--
+    NOTE: No "precision" declaration here — THREE.ShaderMaterial prepends one
+    automatically. A duplicate precision line causes a GLSL compile error on
+    most WebGL drivers and silently renders black.
+    NOTE: Palette colours are declared INSIDE main() as local constants.
+    Global non-const vec3 initialisers are rejected by many WebGL 1 drivers.
+  -->
+  <script id="frag" type="x-shader/x-fragment">
+    uniform float uTime;
+    uniform vec2  uResolution;
+    uniform vec2  uMouse;
+
+    varying vec2 vUv;
+
+    void main() {
+
+      // ── Colour palette ──────────────────────────────────────────────────────
+      // Swap any hex here to recolour the gradient.
+      vec3 c1 = vec3(0.388, 0.400, 0.945);  // #6366f1  indigo
+      vec3 c2 = vec3(0.545, 0.361, 0.965);  // #8b5cf6  violet
+      vec3 c3 = vec3(0.024, 0.714, 0.831);  // #06b6d4  cyan
+      vec3 c4 = vec3(0.925, 0.286, 0.600);  // #ec4899  pink
+      vec3 c5 = vec3(0.118, 0.106, 0.294);  // #1e1b4b  dark base
+
+      // ── Layer 1: horizontal wave influenced by mouse X ──────────────────────
+      // sin oscillates -1..1 → remap to 0..1 with * 0.5 + 0.5.
+      // uTime * 0.5  = drift speed  (raise for faster churn)
+      // uMouse.x * 2.0 = how strongly horizontal mouse movement shifts the wave
+      float layer1 = sin(vUv.x * 3.0 + uTime * 0.5 + uMouse.x * 2.0) * 0.5 + 0.5;
+
+      // ── Layer 2: vertical wave influenced by mouse Y ─────────────────────────
+      // Different frequency (2.5) and time multiplier (0.4) so it drifts
+      // independently of layer 1, producing an organic cross-hatch feel.
+      float layer2 = sin(vUv.y * 2.5 + uTime * 0.4 + uMouse.y * 1.5) * 0.5 + 0.5;
+
+      // ── Layer 3: diagonal wave — pure time drift, no mouse ──────────────────
+      // vUv.x + vUv.y creates a diagonal axis.
+      // Ties layers 1 & 2 together and breaks up horizontal/vertical banding.
+      float layer3 = sin((vUv.x + vUv.y) * 2.0 + uTime * 0.3) * 0.5 + 0.5;
+
+      // ── Colour composition ───────────────────────────────────────────────────
+      // Chain mix() calls using layers as blend weights (0..1).
+      // Each call adds a new colour influence on top of the previous result.
+
+      // Base: indigo ↔ violet driven by horizontal wave
+      vec3 col = mix(c1, c2, layer1);
+
+      // Overlay: push cyan in via vertical wave + mouse Y
+      col = mix(col, c3, layer2 * 0.65);
+
+      // Accent: inject pink along diagonal axis
+      col = mix(col, c4, layer3 * 0.45);
+
+      // Shadow: where all waves destructively cancel, pull toward dark base.
+      // Raise * 0.7 to make shadows deeper.
+      float shadow = (1.0 - layer1) * (1.0 - layer2) * (1.0 - layer3);
+      col = mix(col, c5, shadow * 0.7);
+
+      // ── Vignette ─────────────────────────────────────────────────────────────
+      // smoothstep(0.45, 0.0, dist): returns 1 at centre, 0 at r=0.45+.
+      // Lower 0.45 → tighter vignette. mix() blends the result toward dark base.
+      float dist     = length(vUv - 0.5);
+      float vignette = smoothstep(0.45, 0.0, dist);
+      col = mix(c5, col, vignette * 0.75 + 0.25);
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    // ── Renderer ─────────────────────────────────────────────────────────────────
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
+    renderer.setPixelRatio(1); // 1 is fine — shader runs at native res already
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+    // ── Scene / camera ───────────────────────────────────────────────────────────
+    // Orthographic camera: the quad always exactly fills the viewport regardless
+    // of aspect ratio. We never actually use projection math in the vertex shader,
+    // but Three.js requires a camera to call renderer.render().
+    const scene  = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    // ── Uniforms ─────────────────────────────────────────────────────────────────
+    const uniforms = {
+      uTime:       { value: 0.0 },
+      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      uMouse:      { value: new THREE.Vector2(0.5, 0.5) }, // start centred
+    };
+
+    // ── Fullscreen quad ──────────────────────────────────────────────────────────
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    const material = new THREE.ShaderMaterial({
+      vertexShader:   document.getElementById('vert').textContent,
+      fragmentShader: document.getElementById('frag').textContent,
+      uniforms,
+    });
+    scene.add(new THREE.Mesh(geometry, material));
+
+    // ── Mouse tracking ───────────────────────────────────────────────────────────
+    // Raw target that we lerp uMouse toward each frame.
+    const mouseTarget = new THREE.Vector2(0.5, 0.5);
+
+    window.addEventListener('mousemove', (e) => {
+      // Normalise to 0-1, flip Y so bottom-left = (0,0)
+      mouseTarget.set(
+        e.clientX / window.innerWidth,
+        1.0 - e.clientY / window.innerHeight
+      );
+    });
+
+    // ── Resize ───────────────────────────────────────────────────────────────────
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+    });
+
+    // ── Animation loop ───────────────────────────────────────────────────────────
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // 0.008 per frame ≈ very slow elegant drift.
+      // Raise to 0.02 for Stripe's faster churn.
+      uniforms.uTime.value += 0.008;
+
+      // Lerp mouse toward real position — 0.04 = gentle lag.
+      // Lower → more lag (dreamy), higher → snappier response.
+      uniforms.uMouse.value.lerp(mouseTarget, 0.04);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

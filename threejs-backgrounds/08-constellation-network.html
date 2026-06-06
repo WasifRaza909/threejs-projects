@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Constellation Network — Three.js Hero Background (Effect 08)</title>
+<style>
+  /* ----------------------------------------------------------------------
+     Full-viewport background canvas. NOTE: the dark-navy background lives
+     on <html> (the root), NOT on <body>. The canvas uses z-index:-1, which
+     renders it BEHIND <body>; if <body> had an opaque background it would
+     paint over the canvas and hide everything. Root background + a
+     transparent body lets the negative-z-index canvas show through.
+  ---------------------------------------------------------------------- */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  html { background: #03050f; }      /* very dark navy — gives depth */
+  body { background: transparent; }
+
+  #bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    display: block;
+  }
+
+  /* Demo overlay — centred heading, subtitle, outline CTA. pointer-events
+     is none so the mouse always reaches the canvas underneath. */
+  .overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #ffffff;
+    pointer-events: none;
+    z-index: 1;
+    user-select: none;
+  }
+  .overlay h1 {
+    font-size: clamp(2rem, 7vw, 5rem);
+    font-weight: 200;
+    letter-spacing: 0.18em;
+    text-shadow: 0 0 30px rgba(126, 184, 255, 0.5);
+  }
+  .overlay p {
+    margin-top: 1.2rem;
+    font-size: clamp(0.7rem, 2vw, 1rem);
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+  .overlay .cta {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 0.8em 2.2em;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 2em;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  /* Theme switcher — small minimal buttons, top-right. These DO receive
+     pointer events (the .overlay above does not). */
+  .themes {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+  }
+  .themes button {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .themes button:hover { background: rgba(255, 255, 255, 0.16); }
+  .themes button.active { border-color: #fff; background: rgba(255, 255, 255, 0.2); }
+</style>
+
+<!-- IMPORT MAP — Three.js r158 as an ES module from CDN. -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js"
+  }
+}
+</script>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="themes">
+    <button data-theme="space"  class="active">Space</button>
+    <button data-theme="matrix">Matrix</button>
+    <button data-theme="cyber">Cyber</button>
+  </div>
+
+  <div class="overlay">
+    <h1>Constellation Network</h1>
+    <p>Three.js Hero Background — Effect 08</p>
+    <span class="cta">Explore</span>
+  </div>
+
+<script type="module">
+/* ======================================================================
+   08 — CONSTELLATION NETWORK :: interactive node graph hero background
+   ======================================================================
+
+   A field of drifting "star" nodes across three depth layers. Nearby nodes
+   are joined by faded lines, forming an ever-shifting constellation. The
+   mouse can attract nodes (grab), explode them (click burst), and a bright
+   cursor node is woven into the graph. Three colour themes tween smoothly.
+
+   --------------------------------------------------------------------
+   CUSTOMISATION GUIDE (details inline at each marked spot):
+   --------------------------------------------------------------------
+     • NODE COUNT          → CONFIG.nodeCount (auto-reduced on mobile).
+                             Layer split is derived proportionally.
+     • CONNECTION DISTANCE → CONFIG.connectionDistance. Bigger = more,
+                             longer lines (and more pairs to test). Also
+                             bump CONFIG.linePoolSize if you raise it a lot.
+     • MOVEMENT SPEED      → CONFIG.speedMin / speedMax (per-node velocity).
+     • COLOUR THEMES       → the THEMES object below; add/edit entries and
+                             a matching <button data-theme="..."> above.
+   ====================================================================== */
+
+import * as THREE from 'three';
+
+/* ----------------------------------------------------------------------
+   DEVICE + CONFIG
+---------------------------------------------------------------------- */
+const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+                    .test(navigator.userAgent) || window.innerWidth < 768;
+
+const CONFIG = {
+  nodeCount:          IS_MOBILE ? 60 : 120,   // ← total drifting nodes
+  connectionDistance: IS_MOBILE ? 2.8 : 3.5,  // ← max link length (world units)
+  zConnectWindow:     1.5,                     // links only within ±1.5 z of each other
+  linePoolSize:       300,                     // ← pre-allocated reusable lines
+  speedMin:           0.008,                   // ← per-node velocity range
+  speedMax:           0.022,
+  grabRadius:         2.5,
+  burstRadius:        3.5,
+};
+
+/* ----------------------------------------------------------------------
+   COLOUR THEMES
+   Each theme: background, an array of node palette colours with weights,
+   and the two line colours (far → close). On switch we tween every node
+   and the renderer clear colour over THEME_TWEEN seconds.
+---------------------------------------------------------------------- */
+const THEMES = {
+  space: {
+    bg: 0x03050f,
+    palette: [
+      { color: 0xffffff, weight: 0.60 },  // white stars
+      { color: 0x7eb8ff, weight: 0.25 },  // soft blue
+      { color: 0xa78bfa, weight: 0.15 },  // soft purple
+    ],
+    lineFar: 0x334477, lineClose: 0x7eb8ff,
+  },
+  matrix: {
+    bg: 0x000a00,
+    palette: [ { color: 0x00ff41, weight: 1.0 } ],   // Matrix green
+    lineFar: 0x003300, lineClose: 0x00ff41,
+  },
+  cyber: {
+    bg: 0x000510,
+    palette: [
+      { color: 0x00ffff, weight: 0.5 },   // cyan
+      { color: 0xff00ff, weight: 0.5 },   // magenta
+    ],
+    lineFar: 0x004444, lineClose: 0x00ffff,
+  },
+};
+const THEME_TWEEN = 0.8;   // seconds
+let currentTheme = 'space';
+
+// Pick a weighted-random colour from a theme palette.
+function pickPaletteColor(theme) {
+  const r = Math.random();
+  let acc = 0;
+  for (const entry of theme.palette) {
+    acc += entry.weight;
+    if (r <= acc) return entry.color;
+  }
+  return theme.palette[theme.palette.length - 1].color;
+}
+
+/* ----------------------------------------------------------------------
+   RENDERER / SCENE / CAMERA
+---------------------------------------------------------------------- */
+const canvas   = document.getElementById('bg-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !IS_MOBILE });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, IS_MOBILE ? 1.5 : 2));
+renderer.setClearColor(THEMES.space.bg, 1);
+
+const scene = new THREE.Scene();
+
+// fov 72 gives a generous field of view so the layered depth reads well.
+const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 9);
+
+/* ======================================================================
+   NODE SYSTEM
+   ----------------------------------------------------------------------
+   DEPTH LAYER SYSTEM: nodes are split across 3 z-depth bands. Near nodes
+   are bigger/faster and fully opaque; far nodes are smaller/slower/dimmer.
+   This parallax-like separation is what sells the 3D feel — and we later
+   forbid links between nodes too far apart in z so the depth stays honest.
+====================================================================== */
+const sphereGeo = new THREE.SphereGeometry(0.045, 8, 8);  // shared geometry
+
+// Layer definitions. Counts scale proportionally with nodeCount so mobile's
+// smaller count keeps the same near/mid/far ratio (40/50/30 of 120).
+const baseTotal = 120;
+const layerDefs = [
+  { name: 'near', frac: 40 / baseTotal, zMin: -1, zMax:  1, sizeMul: 1.15, speedMul: 1.25 },
+  { name: 'mid',  frac: 50 / baseTotal, zMin: -3, zMax: -1, sizeMul: 1.0,  speedMul: 1.0  },
+  { name: 'far',  frac: 30 / baseTotal, zMin: -6, zMax: -3, sizeMul: 0.75, speedMul: 0.7  },
+];
+
+const nodes = [];
+const tmpColor = new THREE.Color();
+
+function randomDirection() {
+  // Uniform-ish random unit vector (z component kept small so nodes drift
+  // mostly in the viewing plane).
+  return new THREE.Vector3(
+    Math.random() * 2 - 1,
+    Math.random() * 2 - 1,
+    (Math.random() * 2 - 1) * 0.3
+  ).normalize();
+}
+
+let built = 0;
+for (const layer of layerDefs) {
+  const layerCount = Math.round(CONFIG.nodeCount * layer.frac);
+  for (let i = 0; i < layerCount && built < CONFIG.nodeCount; i++, built++) {
+    const colorHex = pickPaletteColor(THEMES[currentTheme]);
+    const mat = new THREE.MeshBasicMaterial({
+      color: colorHex, transparent: true, opacity: 1,
+    });
+    const mesh = new THREE.Mesh(sphereGeo, mat);
+
+    mesh.position.set(
+      Math.random() * 24 - 12,                            // x: -12 .. 12
+      Math.random() * 14 - 7,                             // y:  -7 .. 7
+      layer.zMin + Math.random() * (layer.zMax - layer.zMin) // z: per layer
+    );
+
+    const speed = (CONFIG.speedMin + Math.random() * (CONFIG.speedMax - CONFIG.speedMin))
+                  * layer.speedMul;
+
+    mesh.userData = {
+      layer:           layer.name,
+      velocity:        randomDirection().multiplyScalar(speed),
+      baseSpeed:       speed,
+      originalOpacity: 0.5 + Math.random() * 0.5,         // 0.5 .. 1.0
+      pulseOffset:     Math.random() * Math.PI * 2,
+      pulseSpeed:      0.8 + Math.random() * 1.2,         // 0.8 .. 2.0
+      size:            (0.03 + Math.random() * 0.05) * layer.sizeMul, // 0.03..0.08
+      isConnected:     false,
+      // colour tween state (current shown colour + tween source/target)
+      curColor:        new THREE.Color(colorHex),
+      fromColor:       new THREE.Color(colorHex),
+      toColor:         new THREE.Color(colorHex),
+    };
+
+    nodes.push(mesh);
+    scene.add(mesh);
+  }
+}
+
+/* ----------------------------------------------------------------------
+   CURSOR NODE — a bright node pinned to the mouse, woven into the graph.
+   Skipped entirely on mobile (no hover there).
+---------------------------------------------------------------------- */
+let cursorNode = null;
+if (!IS_MOBILE) {
+  cursorNode = new THREE.Mesh(
+    sphereGeo,
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 })
+  );
+  cursorNode.scale.setScalar(0.12 / 0.045);   // target visual radius ~0.12
+  cursorNode.renderOrder = 5;                  // always drawn on top
+  cursorNode.material.depthTest = false;
+  scene.add(cursorNode);
+}
+
+/* ======================================================================
+   CONNECTION LINE POOL  ── THE KEY PERFORMANCE TECHNIQUE ──
+   ----------------------------------------------------------------------
+   With 120 nodes there are 120*119/2 = 7,140 possible pairs to test every
+   frame. Creating a new THREE.Line (geometry + material + GPU buffer) for
+   each visible connection every frame would allocate and garbage-collect
+   thousands of objects per second — guaranteeing stutter.
+
+   Instead we PRE-CREATE a fixed pool of reusable Line objects once at
+   startup, add them all to the scene as hidden, and each frame we simply:
+     1. hide every line,
+     2. walk the node pairs, and
+     3. for each in-range pair, grab the next pooled line, rewrite its two
+        endpoints + colour + opacity, and flip it visible.
+   No per-frame allocation, no GC churn → steady 60fps. If more pairs are
+   in range than the pool size, the extras are simply skipped (raise
+   CONFIG.linePoolSize if you increase node count / connection distance).
+====================================================================== */
+const linePool = [];
+for (let i = 0; i < CONFIG.linePoolSize; i++) {
+  const geo = new THREE.BufferGeometry();
+  // 2 points = 6 floats. Allocated ONCE; we mutate these in place.
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+  const mat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0 });
+  const line = new THREE.Line(geo, mat);
+  line.visible = false;
+  line.frustumCulled = false;   // endpoints change every frame; skip culling
+  linePool.push(line);
+  scene.add(line);
+}
+
+// Reusable colour objects for line tinting (avoid per-frame allocation).
+const lineFarColor   = new THREE.Color(THEMES.space.lineFar);
+const lineCloseColor = new THREE.Color(THEMES.space.lineClose);
+const lineTmpColor   = new THREE.Color();
+
+/* ======================================================================
+   MOUSE → WORLD CONVERSION
+   ----------------------------------------------------------------------
+   The pointer gives us 2D screen coords. To interact with nodes living in
+   3D we project a ray from the camera through the cursor and intersect it
+   with the z=0 plane:
+     1. Build an NDC point (x,y in -1..1) at depth 0.5 and UNPROJECT it —
+        this maps the screen point into world space on the near/far line.
+     2. The direction from camera → that point is our ray.
+     3. Walk that ray until z = 0:  distance = -camera.z / direction.z
+     4. worldPos = cameraPos + direction * distance
+   The result is where the cursor "is" on the z=0 plane in world units.
+====================================================================== */
+const mouseNDC   = new THREE.Vector2(999, 999);  // start off-screen
+const mouseWorld = new THREE.Vector3();
+let mouseInside  = false;
+let burstQueued  = false;
+
+function updateMouseWorld() {
+  const v = new THREE.Vector3(mouseNDC.x, mouseNDC.y, 0.5);
+  v.unproject(camera);
+  const dir = v.sub(camera.position).normalize();
+  const distance = -camera.position.z / dir.z;
+  mouseWorld.copy(camera.position).add(dir.multiplyScalar(distance));
+}
+
+window.addEventListener('pointermove', (e) => {
+  mouseNDC.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+  mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  mouseInside = true;
+});
+window.addEventListener('pointerleave', () => { mouseInside = false; });
+// CLICK BURST: flagged here, applied once on the next frame.
+window.addEventListener('pointerdown', () => { if (mouseInside) burstQueued = true; });
+
+/* ----------------------------------------------------------------------
+   THEME SWITCHING (tweened)
+---------------------------------------------------------------------- */
+let themeTween = null;  // { t, dur, fromBg, toBg, fromFar/Close, toFar/Close }
+
+function setTheme(name) {
+  if (!THEMES[name] || name === currentTheme) return;
+  const from = THEMES[currentTheme];
+  const to   = THEMES[name];
+  currentTheme = name;
+
+  // Per-node colour tween: pick a fresh target colour from the new palette.
+  for (const node of nodes) {
+    node.userData.fromColor.copy(node.userData.curColor);
+    node.userData.toColor.set(pickPaletteColor(to));
+  }
+
+  themeTween = {
+    t: 0, dur: THEME_TWEEN,
+    fromBg: new THREE.Color(from.bg),     toBg: new THREE.Color(to.bg),
+    fromFar: new THREE.Color(from.lineFar),   toFar: new THREE.Color(to.lineFar),
+    fromClose: new THREE.Color(from.lineClose), toClose: new THREE.Color(to.lineClose),
+  };
+
+  document.querySelectorAll('.themes button').forEach(b =>
+    b.classList.toggle('active', b.dataset.theme === name));
+}
+
+document.querySelectorAll('.themes button').forEach(btn =>
+  btn.addEventListener('click', () => setTheme(btn.dataset.theme)));
+
+/* ----------------------------------------------------------------------
+   ANIMATION LOOP
+---------------------------------------------------------------------- */
+const clock = new THREE.Clock();
+let frameNo = 0;
+const bgColor = new THREE.Color(THEMES.space.bg);
+
+function animate() {
+  requestAnimationFrame(animate);
+  const time = clock.getElapsedTime();
+  frameNo++;
+
+  if (mouseInside) updateMouseWorld();
+
+  /* --- THEME TWEEN progress --- */
+  if (themeTween) {
+    themeTween.t += clock.getDelta ? Math.min(0.05, clock.getDelta()) : 0;
+    const k = Math.min(1, themeTween.t / themeTween.dur);
+    bgColor.copy(themeTween.fromBg).lerp(themeTween.toBg, k);
+    renderer.setClearColor(bgColor, 1);
+    lineFarColor.copy(themeTween.fromFar).lerp(themeTween.toFar, k);
+    lineCloseColor.copy(themeTween.fromClose).lerp(themeTween.toClose, k);
+    for (const node of nodes) {
+      node.userData.curColor.copy(node.userData.fromColor).lerp(node.userData.toColor, k);
+      node.material.color.copy(node.userData.curColor);
+    }
+    if (k >= 1) themeTween = null;
+  }
+
+  /* ==================================================================
+     NODE UPDATE: movement, wrapping, pulsing, depth, mouse forces
+  ================================================================== */
+  for (const node of nodes) {
+    const ud = node.userData;
+
+    /* --- CLICK BURST: explode nodes near the click outward --- */
+    if (burstQueued && mouseInside) {
+      const d = node.position.distanceTo(mouseWorld);
+      if (d < CONFIG.burstRadius) {
+        const force = node.position.clone().sub(mouseWorld).normalize()
+                        .multiplyScalar(0.08 * (1 - d / CONFIG.burstRadius));
+        ud.velocity.add(force);
+      }
+    }
+
+    /* --- GRAB: attract nodes near the hovering cursor --- */
+    if (mouseInside) {
+      const d = node.position.distanceTo(mouseWorld);
+      if (d < CONFIG.grabRadius) {
+        const force = mouseWorld.clone().sub(node.position).normalize()
+                        .multiplyScalar(0.004 * (1 - d / CONFIG.grabRadius));
+        ud.velocity.add(force);
+      }
+    }
+
+    // Gradually bleed off excess velocity from bursts/grabs back to calm.
+    ud.velocity.multiplyScalar(0.98);
+
+    // Re-energise toward the node's resting speed so it never fully stops.
+    const sp = ud.velocity.length();
+    if (sp < ud.baseSpeed * 0.6) {
+      ud.velocity.normalize().multiplyScalar(ud.baseSpeed * 0.6);
+    }
+
+    /* --- MOVE --- */
+    node.position.add(ud.velocity);
+
+    /* --- BOUNDARY WRAPPING (toroidal field) --- */
+    const p = node.position;
+    if (p.x >  13) p.x = -13;  else if (p.x < -13) p.x = 13;
+    if (p.y >   8) p.y =  -8;  else if (p.y <  -8) p.y =  8;
+    if (p.z >   2) p.z =  -7;  else if (p.z <  -7) p.z =  2;
+
+    /* --- ORGANIC DRIFT: nudge direction every 120 frames --- */
+    if (frameNo % 120 === 0) {
+      const speed = ud.velocity.length();
+      ud.velocity.lerp(randomDirection().multiplyScalar(speed), 0.15);
+    }
+
+    /* --- PULSING (scale + opacity), de-synced via pulseOffset --- */
+    const pulse = Math.sin(time * ud.pulseSpeed + ud.pulseOffset);
+    let scale   = ud.size * (1.0 + pulse * 0.25);
+    let opacity = ud.originalOpacity * (0.7 + pulse * 0.3);
+
+    /* --- DEPTH-BASED EFFECTS by z band --- */
+    if (p.z > -1)      { /* near: full */ }
+    else if (p.z > -3) { opacity *= 0.75; scale *= 0.85; }
+    else               { opacity *= 0.45; scale *= 0.65; }
+
+    // Sphere base radius is 0.045, so divide to hit the target world size.
+    node.scale.setScalar(scale / 0.045);
+    node.material.opacity = THREE.MathUtils.clamp(opacity, 0, 1);
+  }
+  burstQueued = false;
+
+  /* --- CURSOR NODE follows the mouse exactly (no own velocity) --- */
+  if (cursorNode) {
+    cursorNode.visible = mouseInside;
+    if (mouseInside) cursorNode.position.copy(mouseWorld);
+  }
+
+  /* ==================================================================
+     CONNECTION LINES via the pre-allocated pool.
+     On mobile, only rebuild links every 2nd frame (perf); on other
+     frames the previous lines stay as-is.
+  ================================================================== */
+  if (!IS_MOBILE || frameNo % 2 === 0) {
+    rebuildConnections();
+  }
+
+  /* --- SUBTLE CAMERA DRIFT (skipped on mobile) --- */
+  if (!IS_MOBILE) {
+    camera.position.x = Math.sin(time * 0.08) * 0.6;
+    camera.position.y = Math.cos(time * 0.06) * 0.35;
+  }
+  camera.lookAt(0, 0, 0);
+
+  renderer.render(scene, camera);
+}
+
+/* ----------------------------------------------------------------------
+   rebuildConnections — grab pooled lines for every in-range pair.
+   THRESHOLD LOGIC: a pair links only when (a) their 3D distance is under
+   connectionDistance AND (b) they are within zConnectWindow in z. The z
+   gate keeps near nodes from "reaching back" to connect to far nodes,
+   which would flatten the depth illusion.
+---------------------------------------------------------------------- */
+const maxDist = () => CONFIG.connectionDistance;
+
+function rebuildConnections() {
+  let poolIdx = 0;
+  const connDist = maxDist();
+
+  // Reset connection flags + hide all pooled lines.
+  for (const node of nodes) node.userData.isConnected = false;
+  for (let i = 0; i < linePool.length; i++) linePool[i].visible = false;
+
+  // 1) Node-to-node pairs.
+  for (let i = 0; i < nodes.length; i++) {
+    const a = nodes[i];
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = nodes[j];
+
+      // z-window gate (cheap reject first).
+      if (Math.abs(a.position.z - b.position.z) > CONFIG.zConnectWindow) continue;
+
+      const dist = a.position.distanceTo(b.position);
+      if (dist >= connDist) continue;
+
+      if (poolIdx >= linePool.length) break;  // pool exhausted → skip extras
+      const t = dist / connDist;              // 0 = touching, 1 = at threshold
+      drawPooledLine(poolIdx++, a.position, b.position, t, (1 - t) * 0.45);
+
+      a.userData.isConnected = true;
+      b.userData.isConnected = true;
+    }
+    if (poolIdx >= linePool.length) break;
+  }
+
+  // 2) Cursor node connects to nearby nodes with BRIGHTER lines (×1.8).
+  if (cursorNode && cursorNode.visible) {
+    for (let i = 0; i < nodes.length && poolIdx < linePool.length; i++) {
+      const b = nodes[i];
+      const dist = cursorNode.position.distanceTo(b.position);
+      if (dist >= connDist) continue;
+      const t = dist / connDist;
+      drawPooledLine(poolIdx++, cursorNode.position, b.position, t,
+                     Math.min(1, (1 - t) * 0.45 * 1.8));
+    }
+  }
+}
+
+// Write one pooled line's endpoints, colour, and opacity, then show it.
+function drawPooledLine(idx, p1, p2, t, opacity) {
+  const line = linePool[idx];
+  const arr  = line.geometry.attributes.position.array;
+  arr[0] = p1.x; arr[1] = p1.y; arr[2] = p1.z;
+  arr[3] = p2.x; arr[4] = p2.y; arr[5] = p2.z;
+  line.geometry.attributes.position.needsUpdate = true;
+
+  // Colour: lerp far → close as the pair gets nearer (t: 1 → 0).
+  lineTmpColor.copy(lineFarColor).lerp(lineCloseColor, 1 - t);
+  line.material.color.copy(lineTmpColor);
+  line.material.opacity = opacity;
+  line.visible = true;
+}
+
+animate();
+
+/* ----------------------------------------------------------------------
+   RESIZE
+---------------------------------------------------------------------- */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

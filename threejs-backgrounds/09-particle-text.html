@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Particle Text — Three.js Hero Background</title>
+
+  <!-- Three.js r158 via import map -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three":         "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #050508;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /*
+      This canvas IS the foreground — the text is built from particles,
+      so there is no separate HTML text overlay. z-index: 0 keeps it in
+      normal flow at the front.
+    */
+    #bg-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      display: block;
+    }
+
+    /* Tiny hint at the bottom — not part of the particle system */
+    .hint {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.28);
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+  <div class="hint">Move to disturb · Click to morph</div>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    // ═════════════════════════════════════════════════════════════════
+    //  CONFIG — tweak these to customise the effect
+    // ═════════════════════════════════════════════════════════════════
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+                  || window.innerWidth < 768;
+
+    // The list of words the particles cycle through on each click.
+    // CHANGE TEXT CONTENT HERE. On mobile we use a shorter word so the
+    // particle count stays manageable.
+    const WORDS = isMobile ? ['HI', 'YO'] : ['AGENCY', 'HELLO'];
+
+    // Pixel sampling density. Larger step = fewer particles = faster.
+    // CHANGE PARTICLE DENSITY HERE (every Nth pixel in x and y).
+    const SAMPLE_STEP = isMobile ? 6 : 4;
+
+    // Offscreen canvas size used to rasterise the text before sampling.
+    const TEXT_CANVAS_W = 800;
+    const TEXT_CANVAS_H = 200;
+
+    // Maps the offscreen pixel grid into Three.js world units.
+    const WORLD_SPAN_X = 12;   // total world width the text occupies
+    const WORLD_SPAN_Y = 3;    // total world height
+
+    // Animation tuning
+    const ASSEMBLE_LERP = 0.035;  // how fast particles fly to their target
+    const RETURN_LERP   = 0.025;  // how fast disturbed particles float back
+    const STAGGER_FRAMES = 30;    // particles released in waves of this length
+    const FRICTION       = 0.92;  // velocity decay per frame after a push
+
+    // Hover explosion
+    const HOVER_RADIUS = 1.2;
+    const HOVER_FORCE  = 0.4;
+
+    // Colour gradient endpoints (top → bottom of the text).
+    // CHANGE TEXT COLOURS HERE.
+    const COLOR_TOP    = new THREE.Color('#a78bfa');  // purple
+    const COLOR_BOTTOM = new THREE.Color('#06b6d4');  // cyan
+
+    // ═════════════════════════════════════════════════════════════════
+    //  RENDERER / SCENE / CAMERA
+    // ═════════════════════════════════════════════════════════════════
+    const canvas   = document.getElementById('bg-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene  = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+      70, window.innerWidth / window.innerHeight, 0.1, 100
+    );
+    camera.position.z = 7;
+
+    // ═════════════════════════════════════════════════════════════════
+    //  STEP 1 — SAMPLE TEXT PIXELS USING AN OFFSCREEN CANVAS
+    //
+    //  We draw the word in white on a black offscreen canvas, read back
+    //  the raw pixel data, and keep the coordinates of every bright pixel.
+    //  Those coordinates trace out the shape of the letters. Sampling
+    //  every SAMPLE_STEP pixels keeps the particle count reasonable.
+    //
+    //  Returns an array of {wx, wy} world-space target positions.
+    // ═════════════════════════════════════════════════════════════════
+    function sampleText(text) {
+      const c   = document.createElement('canvas');
+      c.width   = TEXT_CANVAS_W;
+      c.height  = TEXT_CANVAS_H;
+      const ctx = c.getContext('2d');
+
+      // Solid black background so brightness test is clean
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, TEXT_CANVAS_W, TEXT_CANVAS_H);
+
+      // White, bold, centred text
+      ctx.fillStyle    = '#ffffff';
+      ctx.font         = 'bold 130px Arial, sans-serif';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, TEXT_CANVAS_W / 2, TEXT_CANVAS_H / 2);
+
+      // Read every pixel back out
+      const data = ctx.getImageData(0, 0, TEXT_CANVAS_W, TEXT_CANVAS_H).data;
+
+      const points = [];
+      for (let y = 0; y < TEXT_CANVAS_H; y += SAMPLE_STEP) {
+        for (let x = 0; x < TEXT_CANVAS_W; x += SAMPLE_STEP) {
+          // index of the red channel for pixel (x, y) in the flat RGBA array
+          const idx        = (y * TEXT_CANVAS_W + x) * 4;
+          const brightness = data[idx]; // red channel ≈ brightness on white text
+
+          if (brightness > 128) {
+            // ── COORDINATE MAPPING ──────────────────────────────────
+            //  Canvas origin is top-left with y growing downward.
+            //  Three.js world origin is centre with y growing upward.
+            //  So we centre the pixel, normalise to [-0.5, 0.5], scale to
+            //  the world span, and FLIP y.
+            const wx =  (x - TEXT_CANVAS_W / 2) / TEXT_CANVAS_W * WORLD_SPAN_X;
+            const wy = -(y - TEXT_CANVAS_H / 2) / TEXT_CANVAS_H * WORLD_SPAN_Y;
+            points.push({ wx, wy });
+          }
+        }
+      }
+      return points;
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    //  STEP 2 — BUILD THE PARTICLE SYSTEM
+    //
+    //  The particle COUNT is fixed for the lifetime of the page (you can't
+    //  resize a BufferGeometry cheaply). We size it to the FIRST word and
+    //  reuse the same buffers for every later word. When a later word has
+    //  fewer pixels than we have particles, the surplus particles are
+    //  "parked" off-screen; when it has more, the extra pixels are ignored.
+    // ═════════════════════════════════════════════════════════════════
+    const firstSample   = sampleText(WORDS[0]);
+    const PARTICLE_COUNT = firstSample.length;
+
+    // Buffers
+    const targetPositions  = new Float32Array(PARTICLE_COUNT * 3); // where each particle wants to be
+    const currentPositions = new Float32Array(PARTICLE_COUNT * 3); // where it is right now
+    const velocities       = new Float32Array(PARTICLE_COUNT * 3); // push impulse, decays each frame
+    const colors           = new Float32Array(PARTICLE_COUNT * 3);
+    const releaseFrame     = new Int32Array(PARTICLE_COUNT);       // stagger: when this particle starts moving
+
+    // Fill targets from the first sample; start each particle EXPLODED at random.
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const p = firstSample[i];
+      targetPositions[i * 3]     = p.wx;
+      targetPositions[i * 3 + 1] = p.wy;
+      targetPositions[i * 3 + 2] = 0;
+
+      // Random exploded start position
+      currentPositions[i * 3]     = (Math.random() * 2 - 1) * 8; // -8..8
+      currentPositions[i * 3 + 1] = (Math.random() * 2 - 1) * 5; // -5..5
+      currentPositions[i * 3 + 2] = (Math.random() * 2 - 1) * 3; // -3..3
+
+      // Stagger release so particles flow in as a wave, not all at once
+      releaseFrame[i] = i % STAGGER_FRAMES;
+
+      // Colour gradient by vertical position (top purple → bottom cyan).
+      // Map wy from [-half, +half] to t in [0,1] where 1 = top.
+      const t = (p.wy / WORLD_SPAN_Y) + 0.5;
+      const col = COLOR_BOTTOM.clone().lerp(COLOR_TOP, THREE.MathUtils.clamp(t, 0, 1));
+      colors[i * 3]     = col.r;
+      colors[i * 3 + 1] = col.g;
+      colors[i * 3 + 2] = col.b;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
+    geometry.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size:         0.045,
+      transparent:  true,
+      opacity:      0.9,
+      vertexColors: true,               // use the per-particle colour attribute
+      depthWrite:   false,
+      blending:     THREE.AdditiveBlending,
+    });
+
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+
+    // ═════════════════════════════════════════════════════════════════
+    //  RE-TARGET TO A NEW WORD  (used by the click handler)
+    //
+    //  We re-sample the new word and overwrite targetPositions + colours.
+    //  Surplus particles (if the new word is sparser) are parked far away
+    //  so they fade out of the composition naturally.
+    // ═════════════════════════════════════════════════════════════════
+    function setWord(text) {
+      const sample = sampleText(text);
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        if (i < sample.length) {
+          const p = sample[i];
+          targetPositions[i * 3]     = p.wx;
+          targetPositions[i * 3 + 1] = p.wy;
+          targetPositions[i * 3 + 2] = 0;
+
+          const t = (p.wy / WORLD_SPAN_Y) + 0.5;
+          const col = COLOR_BOTTOM.clone().lerp(COLOR_TOP, THREE.MathUtils.clamp(t, 0, 1));
+          colors[i * 3]     = col.r;
+          colors[i * 3 + 1] = col.g;
+          colors[i * 3 + 2] = col.b;
+        } else {
+          // Park surplus particles off-screen
+          targetPositions[i * 3]     = (Math.random() * 2 - 1) * 10;
+          targetPositions[i * 3 + 1] = (Math.random() * 2 - 1) * 6;
+          targetPositions[i * 3 + 2] = -5;
+        }
+        // Give every particle a fresh outward kick so the morph reads as
+        // "explode → reassemble" rather than a straight slide.
+        velocities[i * 3]     = (Math.random() * 2 - 1) * 0.25;
+        velocities[i * 3 + 1] = (Math.random() * 2 - 1) * 0.25;
+        velocities[i * 3 + 2] = (Math.random() * 2 - 1) * 0.25;
+      }
+      geometry.attributes.color.needsUpdate = true;
+    }
+
+    let wordIndex = 0;
+    if (!isMobile) {
+      window.addEventListener('click', () => {
+        wordIndex = (wordIndex + 1) % WORDS.length;
+        setWord(WORDS[wordIndex]);
+      });
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    //  BACKGROUND AMBIENT PARTICLES (floating dust)
+    // ═════════════════════════════════════════════════════════════════
+    const DUST_COUNT = 1500;
+    const dustPositions = new Float32Array(DUST_COUNT * 3);
+    for (let i = 0; i < DUST_COUNT; i++) {
+      dustPositions[i * 3]     = (Math.random() * 2 - 1) * 14;
+      dustPositions[i * 3 + 1] = (Math.random() * 2 - 1) * 9;
+      dustPositions[i * 3 + 2] = (Math.random() * 2 - 1) * 6 - 3; // mostly behind text
+    }
+    const dustGeo = new THREE.BufferGeometry();
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+    const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({
+      size:        0.012,
+      color:       0xffffff,
+      transparent: true,
+      opacity:     0.2,
+      depthWrite:  false,
+    }));
+    scene.add(dust);
+
+    // ═════════════════════════════════════════════════════════════════
+    //  MOUSE → WORLD POSITION
+    //
+    //  We project the cursor onto the z = 0 plane (where the text lives)
+    //  so hover distances are measured in the same space as the particles.
+    // ═════════════════════════════════════════════════════════════════
+    const mouseNDC   = new THREE.Vector2(-10, -10); // start far away
+    const mouseWorld = new THREE.Vector3(-10, -10, 0);
+    const raycaster  = new THREE.Raycaster();
+    const textPlane  = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0); // z = 0 plane
+
+    if (!isMobile) {
+      window.addEventListener('mousemove', (e) => {
+        mouseNDC.x = (e.clientX / window.innerWidth)  * 2 - 1;
+        mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouseNDC, camera);
+        raycaster.ray.intersectPlane(textPlane, mouseWorld);
+      });
+    }
+
+    // ═════════════════════════════════════════════════════════════════
+    //  RESIZE
+    // ═════════════════════════════════════════════════════════════════
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ═════════════════════════════════════════════════════════════════
+    //  ANIMATION LOOP
+    // ═════════════════════════════════════════════════════════════════
+    const posArray = geometry.attributes.position.array; // === currentPositions
+    let frame = 0;
+    let time  = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      frame++;
+      time += 0.016;
+
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const ix = i * 3, iy = i * 3 + 1, iz = i * 3 + 2;
+
+        // ── STAGGERED RELEASE ───────────────────────────────────────
+        //  During the opening assembly, hold a particle frozen until its
+        //  release frame arrives. This produces the flowing-wave entrance.
+        if (frame < releaseFrame[i]) continue;
+
+        // ── HOVER EXPLOSION ─────────────────────────────────────────
+        //  Particles near the cursor get pushed radially away. The closer
+        //  they are, the harder the shove.
+        if (!isMobile) {
+          const dx = posArray[ix] - mouseWorld.x;
+          const dy = posArray[iy] - mouseWorld.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < HOVER_RADIUS && dist > 0.0001) {
+            const strength = (1 - dist / HOVER_RADIUS) * HOVER_FORCE;
+            velocities[ix] += (dx / dist) * strength;
+            velocities[iy] += (dy / dist) * strength;
+          }
+        }
+
+        // ── APPLY VELOCITY + FRICTION ───────────────────────────────
+        posArray[ix] += velocities[ix];
+        posArray[iy] += velocities[iy];
+        posArray[iz] += velocities[iz];
+        velocities[ix] *= FRICTION;
+        velocities[iy] *= FRICTION;
+        velocities[iz] *= FRICTION;
+
+        // ── EASE TOWARD TARGET ──────────────────────────────────────
+        //  Use the snappier ASSEMBLE_LERP during the opening seconds,
+        //  then the gentler RETURN_LERP so disturbed particles float back.
+        const lerp = frame < 160 ? ASSEMBLE_LERP : RETURN_LERP;
+        posArray[ix] += (targetPositions[ix] - posArray[ix]) * lerp;
+        posArray[iy] += (targetPositions[iy] - posArray[iy]) * lerp;
+        posArray[iz] += (targetPositions[iz] - posArray[iz]) * lerp;
+      }
+      geometry.attributes.position.needsUpdate = true;
+
+      // ── Background dust drifts slowly upward, wrapping around ───────
+      for (let i = 0; i < DUST_COUNT; i++) {
+        dustPositions[i * 3 + 1] += 0.0003 + 0.0007; // slow upward drift
+        if (dustPositions[i * 3 + 1] > 9) dustPositions[i * 3 + 1] = -9;
+      }
+      dustGeo.attributes.position.needsUpdate = true;
+      dust.rotation.y += 0.0002;
+
+      // ── Subtle camera bob ──────────────────────────────────────────
+      camera.position.y = Math.sin(time * 0.4) * 0.1;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
