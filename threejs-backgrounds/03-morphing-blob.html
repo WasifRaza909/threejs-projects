@@ -5,28 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Morphing Blob — Effect 03</title>
 
-<!--
-  ============================================================================
-  MORPHING BLOB — Three.js Hero Background (Effect 03)
-  ============================================================================
-  A high-detail icosahedron whose surface is displaced by 3D simplex noise,
-  giving a slow, organic, breathing "blob" of metallic material. Three coloured
-  point lights orbit it (purple / cyan / pink) so the metal catches shifting
-  highlights. Fog fades the far side into black for an atmospheric glow.
-
-  ---------------------------------------------------------------------------
-  CUSTOMISATION GUIDE (see the CONFIG block in the script below)
-  ---------------------------------------------------------------------------
-    • Blob COLOUR        → CONFIG.blobColor      (base material colour, hex)
-    • Metal / matte look → CONFIG.metalness / CONFIG.roughness
-    • Noise SPEED        → CONFIG.timeStep       (per-frame time increment)
-    • Noise STRENGTH     → CONFIG.noiseStrength  (how far vertices push out, 0–1+)
-    • Noise SCALE        → CONFIG.noiseScale     (spatial frequency of the lumps)
-    • Light COLOURS      → CONFIG.light1 / light2 / light3 (hex)
-    • Light INTENSITY    → set on each PointLight where created
-  ============================================================================
--->
-
 <style>
   * {
     margin: 0;
@@ -34,13 +12,6 @@
     box-sizing: border-box;
   }
 
-  /*
-    The gradient must live on <html> — not <body>.
-    CSS rule: if <html> has a non-transparent background it becomes the
-    "viewport canvas" (the absolute bottom layer), painted before everything
-    else, including fixed-positioned elements. Putting it on <body> instead
-    paints the gradient OVER the canvas (z-index: -1), hiding Three.js.
-  */
   html {
     width: 100%;
     height: 100%;
@@ -52,7 +23,7 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: transparent; /* must stay transparent so canvas shows through */
+    background: transparent;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
@@ -65,48 +36,62 @@
     z-index: -1;
     display: block;
   }
-
-  .hero {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 0 1.5rem;
-    pointer-events: none;
-  }
-
-  .hero h1 {
-    color: #ffffff;
-    font-size: clamp(2.2rem, 7vw, 5.5rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.05;
-    margin-bottom: 1.2rem;
-    text-shadow: 0 2px 50px rgba(124, 58, 237, 0.4);
-  }
-
-  .hero p {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: clamp(0.95rem, 2.2vw, 1.3rem);
-    font-weight: 400;
-    letter-spacing: 0.02em;
-  }
 </style>
 </head>
 <body>
 
 <canvas id="scene"></canvas>
 
-<main class="hero">
-  <h1>Morphing Blob</h1>
-  <p>Three.js Hero Background — Effect 03</p>
-</main>
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 03 / 10
+  </a>
 
-<!-- Three.js r158 + simplex-noise v4 via CDN import map -->
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Morphing Blob</p>
+  </div>
+
 <script type="importmap">
 {
   "imports": {
@@ -119,75 +104,71 @@
 <script type="module">
   import * as THREE from 'three';
   import { createNoise3D } from 'simplex-noise';
-
-  // ---- CONFIG: tweak these to customise the effect ----
+    // ??? Configuration ? edit these values to customise the effect ???????????????
   const CONFIG = {
-    blobColor:     0x7c3aed,  // base material colour
-    metalness:     0.85,      // 1 = mirror-metal, 0 = dielectric
-    roughness:     0.15,      // 0 = sharp reflections, 1 = matte
-    timeStep:      0.004,     // noise animation speed
-    noiseStrength: 0.45,      // displacement amount (scale = 1 + noise * strength)
-    noiseScale:    0.35,      // spatial frequency of the lumps
-    light1:        0x8b5cf6,  // purple orbiting light
-    light2:        0x06b6d4,  // cyan counter-orbiting light
-    light3:        0xec4899   // pink vertical light
+    // Base blob colour
+    blobColor: '#7c3aed',
+    // How much the surface morphs (0 = perfect sphere, 1 = extreme distortion)
+    morphStrength: 0.45,
+    // Speed of morphing animation
+    morphSpeed: 0.004,
+    // Colour of first orbiting light (purple by default)
+    light1Color: '#8b5cf6',
+    // Colour of second orbiting light (cyan by default)
+    light2Color: '#06b6d4',
+    // Colour of third orbiting light (pink by default)
+    light3Color: '#ec4899',
+    // Light brightness (higher = more dramatic)
+    lightIntensity: 4,
+    // How strongly mouse rotates the blob
+    mouseInfluence: 0.4,
+    // Blob size
+    blobRadius: 2.2,
   };
+    const canvas = document.getElementById('scene');
 
-  const canvas = document.getElementById('scene');
-
-  // ---- Renderer (alpha: true = transparent clear so CSS gradient shows through) ----
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(0x000000, 0);
 
-  // ---- Scene & Camera ----
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x000000, 8, 20); // fade far side into black
+  scene.fog = new THREE.Fog(0x000000, 8, 20);
 
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.set(0, 0, 6);
   camera.lookAt(0, 0, 0);
 
-  // ---- Blob geometry ----
-  // detail=64 → each of the 20 icosahedron faces subdivides into 65² = 4225 triangles
-  // total ≈ 84 500 triangles / 253 500 vertices (non-indexed)
-  const geometry = new THREE.IcosahedronGeometry(2.2, 64);
+  const geometry = new THREE.IcosahedronGeometry(CONFIG.blobRadius, 64);
 
-  // Snapshot the undeformed vertex positions — every frame's morph is computed
-  // from these originals so the noise never accumulates / drifts.
   const origPositions = new Float32Array(geometry.attributes.position.array);
 
   const material = new THREE.MeshStandardMaterial({
-    color:     CONFIG.blobColor,
-    metalness: CONFIG.metalness,
-    roughness: CONFIG.roughness,
+    color:     new THREE.Color(CONFIG.blobColor),
+    metalness: 0.85,
+    roughness: 0.15,
     wireframe: false
   });
 
   const blob = new THREE.Mesh(geometry, material);
   scene.add(blob);
 
-  // ---- Noise ----
   const noise3D = createNoise3D();
 
-  // ---- Lighting ----
   const ambient = new THREE.AmbientLight(0x1a0a2e, 0.3);
   scene.add(ambient);
 
-  const light1 = new THREE.PointLight(CONFIG.light1, 4, 12); // purple, orbits
-  const light2 = new THREE.PointLight(CONFIG.light2, 4, 12); // cyan, counter-orbits
-  const light3 = new THREE.PointLight(CONFIG.light3, 2, 8);  // pink, vertical sweep
+  const light1 = new THREE.PointLight(CONFIG.light1Color, CONFIG.lightIntensity, 12);
+  const light2 = new THREE.PointLight(CONFIG.light2Color, CONFIG.lightIntensity, 12);
+  const light3 = new THREE.PointLight(CONFIG.light3Color, CONFIG.lightIntensity * 0.5, 8);
   scene.add(light1, light2, light3);
 
-  // ---- Mouse interaction ----
   const mouse = { x: 0, y: 0 };
   window.addEventListener('mousemove', (e) => {
     mouse.x =  (e.clientX / window.innerWidth)  * 2 - 1;
     mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
   });
 
-  // ---- Animation loop ----
   let time = 0;
   let cameraAngle = 0;
   const pos = geometry.attributes.position;
@@ -195,9 +176,8 @@
   function animate() {
     requestAnimationFrame(animate);
 
-    time += CONFIG.timeStep;
+    time += CONFIG.morphSpeed;
 
-    // --- Morph the blob from its original (undeformed) positions ---
     for (let i = 0; i < pos.count; i++) {
       const ix = i * 3;
       const ox = origPositions[ix];
@@ -205,11 +185,11 @@
       const oz = origPositions[ix + 2];
 
       const n = noise3D(
-        ox * CONFIG.noiseScale + time,
-        oy * CONFIG.noiseScale + time,
-        oz * CONFIG.noiseScale
+        ox * 0.35 + time,
+        oy * 0.35 + time,
+        oz * 0.35
       );
-      const scale = 1.0 + n * CONFIG.noiseStrength;
+      const scale = 1.0 + n * CONFIG.morphStrength;
 
       pos.array[ix]     = ox * scale;
       pos.array[ix + 1] = oy * scale;
@@ -218,16 +198,13 @@
     pos.needsUpdate = true;
     geometry.computeVertexNormals();
 
-    // --- Orbiting lights ---
     light1.position.set( Math.sin(time * 0.7) * 5, Math.cos(time * 0.5) * 3,  2);
     light2.position.set(-Math.sin(time * 0.7) * 5, Math.cos(time * 0.8) * 3, -2);
     light3.position.set(0, Math.sin(time * 1.2) * 4, Math.cos(time) * 3);
 
-    // --- Mouse rotation (lerped for smooth feel) ---
-    blob.rotation.y += (mouse.x *  0.4 - blob.rotation.y) * 0.02;
-    blob.rotation.x += (mouse.y * -0.2 - blob.rotation.x) * 0.02;
+    blob.rotation.y += (mouse.x * CONFIG.mouseInfluence - blob.rotation.y) * 0.02;
+    blob.rotation.x += (mouse.y * -CONFIG.mouseInfluence * 0.5 - blob.rotation.x) * 0.02;
 
-    // --- Slow camera auto-orbit around Y axis (radius 6) ---
     cameraAngle += 0.0004;
     camera.position.x = Math.sin(cameraAngle) * 6;
     camera.position.z = Math.cos(cameraAngle) * 6;
@@ -237,13 +214,11 @@
   }
   animate();
 
-  // ---- Resize handling ----
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 </script>
-
 </body>
 </html>

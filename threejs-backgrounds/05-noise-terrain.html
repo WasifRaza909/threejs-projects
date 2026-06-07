@@ -5,22 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>05 — Noise Terrain</title>
 
-  <!--
-    INFINITE SCROLL TECHNIQUE:
-    The geometry is STATIONARY. Each frame we increment a `scrollOffset` and
-    re-sample noise at (x, localZ - scrollOffset) for every vertex Y.
-    The noise landscape slides through the mesh — no vertex teleporting,
-    no seam artifacts, no stretched triangles.
-
-    TUNING GUIDE:
-    - Terrain width / length  →  PlaneGeometry first two args (20, 60)
-    - Grid density            →  PlaneGeometry last two args (36, 100) — lower = coarser grid
-    - Noise scale             →  noiseX (0.18) and noiseZ (0.12) — lower = bigger hills
-    - Height amplitude        →  * 2.8 (hills) and * 0.6 (detail bumps)
-    - Scroll speed            →  scrollSpeed per layer (0.10 primary, 0.065 secondary)
-    - Fog density             →  FogExp2 second arg (0.028) — higher = fades sooner
-  -->
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -37,37 +21,6 @@
       inset: 0;
       z-index: -1;
     }
-
-    .overlay {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      gap: 1rem;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    .overlay h1 {
-      font-size: clamp(2.5rem, 8vw, 6rem);
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #00ff88;
-      text-shadow:
-        0 0 20px rgba(0, 255, 136, 0.6),
-        0 0 60px rgba(0, 255, 136, 0.25);
-    }
-
-    .overlay p {
-      font-size: clamp(0.85rem, 2vw, 1.1rem);
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.45);
-    }
   </style>
 
   <script type="importmap">
@@ -81,53 +34,106 @@
 </head>
 <body>
 
-  <div id="canvas-container"></div>
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 05 / 10
+  </a>
 
-  <div class="overlay">
-    <h1>Noise Terrain</h1>
-    <p>Three.js Hero Background &mdash; Effect 05</p>
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Noise Terrain</p>
   </div>
 
-  <script type="module">
+<div id="canvas-container"></div>
+<script type="module">
     import * as THREE from 'three';
     import { createNoise2D } from 'simplex-noise';
-
+    // ??? Configuration ? edit these values to customise the effect ???????????????
+    const CONFIG = {
+      // Wireframe colour
+      terrainColor: '#00ff88',
+      // How tall the hills are
+      terrainHeight: 3.2,
+      // How zoomed in the noise is (lower = bigger hills, higher = more detail)
+      noiseScale: 0.18,
+      // How fast terrain scrolls toward the viewer
+      scrollSpeed: 0.12,
+      // Wireframe opacity (0 to 1)
+      opacity: 0.55,
+      // Fog density (higher = more fog, shorter visible distance)
+      fogDensity: 0.022,
+      // Camera height above terrain
+      cameraHeight: 2.5,
+      // Second terrain layer opacity (depth effect)
+      secondLayerOpacity: 0.2,
+    };
     const noise2D = createNoise2D();
 
-    // ─── Renderer ───────────────────────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 1);
     document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-    // ─── Scene & fog ────────────────────────────────────────────────────────────
     const scene = new THREE.Scene();
-    // Exponential fog fades distant terrain to black — the depth illusion depends on it.
-    scene.fog = new THREE.FogExp2(0x000000, 0.028);
 
-    // ─── Camera ─────────────────────────────────────────────────────────────────
+    scene.fog = new THREE.FogExp2(0x000000, CONFIG.fogDensity);
+
     const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 500);
-    camera.position.set(0, 2.5, 5);
+    camera.position.set(0, CONFIG.cameraHeight, 5);
     camera.lookAt(0, 1.5, -10);
 
-    // ─── Noise helpers ──────────────────────────────────────────────────────────
-    // Pre-store local Z values once so we read them from a plain array (fast)
-    // rather than calling positions.getZ(i) inside the hot animation loop.
     function sampleHeight(x, z) {
-      return noise2D(x * 0.18, z * 0.12) * 2.8   // broad hills
-           + noise2D(x * 0.40, z * 0.35) * 0.6;  // fine detail bumps
+      return noise2D(x * CONFIG.noiseScale, z * CONFIG.noiseScale * 0.67) * (CONFIG.terrainHeight - 0.4)
+           + noise2D(x * CONFIG.noiseScale * 2.22, z * CONFIG.noiseScale * 1.94) * 0.6;
     }
 
-    // ─── Terrain factory ────────────────────────────────────────────────────────
     function createTerrain(offsetX, offsetY, color, opacity, scrollSpeed) {
-      // 20 wide × 60 deep, 36 × 100 segments → clear visible grid squares
       const geometry = new THREE.PlaneGeometry(20, 60, 36, 100);
-      geometry.rotateX(-Math.PI / 2); // lay flat on XZ plane
+      geometry.rotateX(-Math.PI / 2);
 
       const pos = geometry.attributes.position;
 
-      // Cache local X and Z values — these never change
       const localX = new Float32Array(pos.count);
       const localZ = new Float32Array(pos.count);
       for (let i = 0; i < pos.count; i++) {
@@ -135,7 +141,6 @@
         localZ[i] = pos.getZ(i);
       }
 
-      // Initial height bake
       for (let i = 0; i < pos.count; i++) {
         pos.setY(i, sampleHeight(localX[i], localZ[i]));
       }
@@ -155,14 +160,9 @@
       return { pos, localX, localZ, scrollSpeed, offset: 0 };
     }
 
-    // Primary layer
-    const primary   = createTerrain(0,    0,     0x00ff88, 0.6,  0.10);
-    // Secondary layer — offset gives subtle depth parallax
-    const secondary = createTerrain(0.3, -0.15,  0x00ff88, 0.18, 0.065);
+    const primary   = createTerrain(0,    0,     CONFIG.terrainColor, CONFIG.opacity, CONFIG.scrollSpeed);
+    const secondary = createTerrain(0.3, -0.15,  CONFIG.terrainColor, CONFIG.secondLayerOpacity, CONFIG.scrollSpeed * 0.65);
 
-    // ─── Per-frame terrain update ────────────────────────────────────────────────
-    // The geometry is stationary. We advance `offset` each frame and re-sample
-    // noise at (x, localZ - offset). The noise field scrolls through the mesh.
     function updateTerrain(layer) {
       layer.offset += layer.scrollSpeed;
       const { pos, localX, localZ, offset } = layer;
@@ -172,22 +172,19 @@
       pos.needsUpdate = true;
     }
 
-    // ─── Resize ─────────────────────────────────────────────────────────────────
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // ─── Animation loop ─────────────────────────────────────────────────────────
     let time = 0;
 
     function animate() {
       requestAnimationFrame(animate);
       time += 0.016;
 
-      // Subtle camera bob — terrain moves, camera stays laterally fixed
-      camera.position.y = 2.5 + Math.sin(time * 0.4) * 0.15;
+      camera.position.y = CONFIG.cameraHeight + Math.sin(time * 0.4) * 0.15;
 
       updateTerrain(primary);
       updateTerrain(secondary);

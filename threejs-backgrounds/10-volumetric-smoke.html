@@ -5,11 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Volumetric Smoke — Three.js Hero Background</title>
 
-  <!--
-    IMPORT MAP
-    Three.js r158 + simplex-noise v4 (ES module build).
-    simplex-noise drives the slow organic drift of every smoke puff.
-  -->
   <script type="importmap">
     {
       "imports": {
@@ -24,7 +19,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #000000;     /* pure black so the smoke reads as luminous */
+      background: #000000;
       min-height: 100vh;
       overflow: hidden;
       font-family: 'Segoe UI', system-ui, sans-serif;
@@ -38,43 +33,9 @@
       display: block;
     }
 
-    /* ── Overlay heading ────────────────────────────────────────── */
-    .overlay {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      gap: 1rem;
-      padding: 2rem;
-      text-align: center;
-      pointer-events: none;     /* mouse passes through to the canvas */
-      color: #ffffff;
-    }
-
-    .overlay h1 {
-      font-size: clamp(2.8rem, 8.5vw, 6.5rem);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 1;
-      /* Atmospheric glow */
-      text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
-    }
-
-    .overlay p {
-      font-size: clamp(0.75rem, 1.8vw, 1rem);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.5);
-      text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-    }
-
-    /* ── Palette switch buttons (top-right) ─────────────────────── */
     .palette {
       position: absolute;
-      top: 1.25rem;
+      top: 58px;
       right: 1.25rem;
       z-index: 10;
       display: flex;
@@ -105,43 +66,100 @@
 
   <canvas id="bg-canvas"></canvas>
 
-  <!-- Palette switcher -->
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 10 / 10
+  </a>
+
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Volumetric Smoke</p>
+  </div>
+
   <div class="palette">
     <button data-palette="dark" class="active">Dark</button>
     <button data-palette="purple">Purple</button>
     <button data-palette="inferno">Inferno</button>
   </div>
-
-  <div class="overlay">
-    <h1>Volumetric Smoke</h1>
-    <p>Three.js Hero Background — Effect 10</p>
-  </div>
-
   <script type="module">
     import * as THREE        from 'three';
     import { createNoise3D } from 'simplex-noise';
-
-    // ═════════════════════════════════════════════════════════════════
-    //  CONFIG  — customise the effect here
-    // ═════════════════════════════════════════════════════════════════
+    // ??? Configuration ? edit these values to customise the effect ???????????????
+    const CONFIG = {
+      // Total smoke particle count
+      particleCount: 180,
+      // How fast smoke drifts upward
+      driftSpeed: 0.0015,
+      // Maximum particle opacity (keep low for atmospheric look)
+      maxOpacity: 0.08,
+      // Colour of ground fog layer
+      smokeDarkColor: '#1a1a2e',
+      // Colour of mid smoke layer
+      smokeMidColor: '#2d1b4e',
+      // Noise animation speed (lower = slower, dreamier)
+      noiseSpeed: 0.0008,
+      // How strongly mouse creates wind
+      windStrength: 0.3,
+      // Colour of first atmospheric light
+      light1Color: '#3b0764',
+      // Colour of second atmospheric light
+      light2Color: '#0c4a6e',
+      // Colour of third atmospheric light
+      light3Color: '#450a0a',
+    };
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
                   || window.innerWidth < 768;
 
-    // CHANGE PARTICLE COUNT HERE. Split across 3 depth layers below.
-    const TOTAL_PARTICLES = isMobile ? 80 : 180;
+    const TOTAL_PARTICLES = isMobile ? Math.round(CONFIG.particleCount * 0.44) : CONFIG.particleCount;
 
-    // CHANGE DRIFT / WIND STRENGTH HERE.
-    const TIME_STEP    = 0.0008;  // global clock speed — lower = dreamier
-    const WIND_STRENGTH = { x: 0.3, y: 0.1 };
+    const TIME_STEP    = CONFIG.noiseSpeed;
+    const WIND_STRENGTH = { x: CONFIG.windStrength, y: CONFIG.windStrength * 0.33 };
 
-    // ── Colour palettes ─────────────────────────────────────────────
-    //  Each palette defines the weighted smoke colours plus the 3 glow
-    //  light colours. ADD / EDIT PALETTES HERE.
     const PALETTES = {
       dark: {
-        // [colour, weight] — weights are relative, normalised at pick time
-        smoke:  [['#1a1a2e', 0.8], ['#2d1b4e', 0.1], ['#0d1f2d', 0.1]],
-        lights: ['#3b0764', '#0c4a6e', '#450a0a'],
+
+        smoke:  [[CONFIG.smokeDarkColor, 0.8], [CONFIG.smokeMidColor, 0.1], ['#0d1f2d', 0.1]],
+        lights: [CONFIG.light1Color, CONFIG.light2Color, CONFIG.light3Color],
       },
       purple: {
         smoke:  [['#2d1b69', 0.8], ['#3b0764', 0.1], ['#1e1b4b', 0.1]],
@@ -154,9 +172,6 @@
     };
     let currentPalette = 'dark';
 
-    // ═════════════════════════════════════════════════════════════════
-    //  RENDERER / SCENE / CAMERA
-    // ═════════════════════════════════════════════════════════════════
     const canvas   = document.getElementById('bg-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -172,13 +187,6 @@
 
     const noise3D = createNoise3D();
 
-    // ═════════════════════════════════════════════════════════════════
-    //  SMOKE TEXTURE  — soft wispy puff drawn on an offscreen canvas
-    //
-    //  We stack several radial gradients at random offsets so the puff
-    //  isn't a perfect circle — that irregularity is what sells "smoke"
-    //  rather than "fuzzy ball". Built once and shared by all particles.
-    // ═════════════════════════════════════════════════════════════════
     function makeSmokeTexture() {
       const size = 128;
       const c    = document.createElement('canvas');
@@ -187,7 +195,6 @@
 
       ctx.clearRect(0, 0, size, size);
 
-      // Helper: one soft radial blob
       function blob(cx, cy, r) {
         const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
         g.addColorStop(0.0, 'rgba(255,255,255,1.0)');
@@ -200,9 +207,9 @@
       }
 
       const mid = size / 2;
-      // Main central puff
+
       blob(mid, mid, mid * 0.9);
-      // 4-5 smaller offset puffs to break up the silhouette
+
       for (let i = 0; i < 5; i++) {
         const angle = Math.random() * Math.PI * 2;
         const dist  = Math.random() * mid * 0.4;
@@ -219,9 +226,6 @@
     }
     const smokeTexture = makeSmokeTexture();
 
-    // ═════════════════════════════════════════════════════════════════
-    //  PALETTE HELPERS
-    // ═════════════════════════════════════════════════════════════════
     function pickWeightedColor(weighted) {
       const total = weighted.reduce((s, [, w]) => s + w, 0);
       let r = Math.random() * total;
@@ -231,24 +235,15 @@
       return new THREE.Color(weighted[0][0]);
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    //  BUILD SMOKE PARTICLES across 3 depth layers
-    //
-    //  Layer split (scaled to TOTAL_PARTICLES):
-    //    Layer 1 ground fog  ≈ 44%   low, wide, resists wind
-    //    Layer 2 mid smoke   ≈ 33%
-    //    Layer 3 high wisps  ≈ 22%   light, reacts most to wind
-    // ═════════════════════════════════════════════════════════════════
     const particles = [];
 
     const layerCounts = [
-      Math.round(TOTAL_PARTICLES * 0.44), // layer 1
-      Math.round(TOTAL_PARTICLES * 0.33), // layer 2
-      0,                                   // layer 3 = remainder
+      Math.round(TOTAL_PARTICLES * 0.44),
+      Math.round(TOTAL_PARTICLES * 0.33),
+      0,
     ];
     layerCounts[2] = TOTAL_PARTICLES - layerCounts[0] - layerCounts[1];
 
-    // Per-layer spawn ranges: [xMin,xMax, yMin,yMax, zMin,zMax]
     const layerRanges = {
       1: [-10, 10, -3,   -0.5, -5, 2],
       2: [ -8,  8, -0.5,  2.5, -6, 1],
@@ -263,12 +258,12 @@
       const size = rand(2.5, 6.0);
       const geo  = new THREE.PlaneGeometry(size, size);
 
-      const maxOpacity = rand(0.025, 0.08);
+      const maxOpacity = rand(CONFIG.maxOpacity * 0.31, CONFIG.maxOpacity);
       const mat = new THREE.MeshBasicMaterial({
         map:         smokeTexture,
         transparent: true,
         opacity:     maxOpacity,
-        depthWrite:  false,                 // CRITICAL: stops z-fighting between planes
+        depthWrite:  false,
         blending:    THREE.NormalBlending,
         side:        THREE.DoubleSide,
         color:       pickWeightedColor(PALETTES[currentPalette].smoke),
@@ -277,10 +272,9 @@
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.set(rand(xMin, xMax), rand(yMin, yMax), rand(zMin, zMax));
 
-      // Drift direction with an upward (positive-y) bias
       const dir = new THREE.Vector3(
         rand(-1, 1),
-        rand(0.3, 1),          // mostly upward
+        rand(0.3, 1),
         rand(-1, 1)
       ).normalize();
 
@@ -292,8 +286,8 @@
         noiseOffset:      rand(0, 1000),
         layer:            layer,
         maxOpacity:       maxOpacity,
-        // Opacity lifecycle: fade in → hold → fade out → recycle
-        life:             Math.random(),         // start mid-cycle so no synced pop
+
+        life:             Math.random(),
         lifeSpeed:        rand(0.0008, 0.002),
       };
 
@@ -306,13 +300,6 @@
       for (let i = 0; i < layerCounts[layer - 1]; i++) spawnParticle(layer);
     });
 
-    // ═════════════════════════════════════════════════════════════════
-    //  ATMOSPHERIC GLOW  — light "bloom" planes behind the smoke
-    //
-    //  MeshBasicMaterial ignores real lights, so instead of PointLights
-    //  we place additive-blended gradient planes at the light positions.
-    //  They glow through the layered smoke for moody coloured depth.
-    // ═════════════════════════════════════════════════════════════════
     function makeGlowTexture() {
       const size = 128;
       const c = document.createElement('canvas');
@@ -345,14 +332,11 @@
         })
       );
       mesh.position.set(...cfg.pos);
-      mesh.renderOrder = -1; // render behind smoke
+      mesh.renderOrder = -1;
       scene.add(mesh);
       return mesh;
     });
 
-    // ═════════════════════════════════════════════════════════════════
-    //  MOUSE WIND
-    // ═════════════════════════════════════════════════════════════════
     const mouse     = { x: 0, y: 0 };
     const windForce = { x: 0, y: 0 };
     window.addEventListener('mousemove', (e) => {
@@ -365,25 +349,20 @@
       mouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
     }, { passive: true });
 
-    // Per-layer wind responsiveness: ground fog resists, wisps react most.
     const WIND_FACTOR = { 1: 0.4, 2: 0.7, 3: 1.0 };
 
-    // ═════════════════════════════════════════════════════════════════
-    //  PALETTE SWITCHING  (tween colours over ~1.5 s)
-    // ═════════════════════════════════════════════════════════════════
-    let paletteTween = null; // { from, to, t } per particle handled inline
+    let paletteTween = null;
 
     function switchPalette(name) {
       if (!PALETTES[name] || name === currentPalette) return;
       currentPalette = name;
 
-      // Assign each particle a fresh target colour from the new palette.
       particles.forEach(p => {
         p.userData.colorFrom = p.material.color.clone();
         p.userData.colorTo   = pickWeightedColor(PALETTES[name].smoke);
         p.userData.colorT    = 0;
       });
-      // Glow planes too
+
       glowPlanes.forEach((g, i) => {
         g.userData.colorFrom = g.material.color.clone();
         g.userData.colorTo   = new THREE.Color(PALETTES[name].lights[i]);
@@ -391,7 +370,6 @@
       });
       paletteTween = true;
 
-      // Update button active state
       document.querySelectorAll('.palette button').forEach(b =>
         b.classList.toggle('active', b.dataset.palette === name));
     }
@@ -400,87 +378,67 @@
       btn.addEventListener('click', () => switchPalette(btn.dataset.palette));
     });
 
-    // ═════════════════════════════════════════════════════════════════
-    //  RESIZE
-    // ═════════════════════════════════════════════════════════════════
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // ═════════════════════════════════════════════════════════════════
-    //  ANIMATION LOOP
-    // ═════════════════════════════════════════════════════════════════
     let time  = 0;
     let frame = 0;
-    const COLOR_TWEEN_SPEED = 1 / 90; // ~1.5 s at 60fps
+    const COLOR_TWEEN_SPEED = 1 / 90;
 
     function animate() {
       requestAnimationFrame(animate);
       time += TIME_STEP;
       frame++;
 
-      // ── Smooth the mouse wind ───────────────────────────────────
       windForce.x += (mouse.x * WIND_STRENGTH.x - windForce.x) * 0.02;
       windForce.y += (mouse.y * WIND_STRENGTH.y - windForce.y) * 0.02;
 
-      // On mobile, update only half the particles each frame (alternating)
-      // to halve noise cost.
       const stride = isMobile ? 2 : 1;
       const phase  = isMobile ? (frame % 2) : 0;
 
       for (let i = 0; i < particles.length; i++) {
         const p  = particles[i];
         const ud = p.userData;
-
-        // Mobile: skip the heavy noise math on alternate particles/frames,
-        // but still billboard + apply opacity every frame.
         const doNoise = (stride === 1) || (i % 2 === phase);
 
         if (doNoise) {
-          // ── NOISE-DRIVEN DRIFT ──────────────────────────────────
           const nX = noise3D(ud.noiseOffset,        time * 0.4, 0) * 0.6;
           const nY = noise3D(ud.noiseOffset + 100,  time * 0.3, 0) * 0.3;
           const nZ = noise3D(ud.noiseOffset + 200,  time * 0.35, 0) * 0.4;
 
           p.position.x += (nX - p.position.x * 0.001) * ud.driftSpeed * 0.02;
-          p.position.y += (0.0015 + nY * 0.001) * ud.driftSpeed;   // always rise
+          p.position.y += (CONFIG.driftSpeed + nY * 0.001) * ud.driftSpeed;
           p.position.z += nZ * 0.008;
           p.rotation.z += ud.rotationSpeed;
 
-          // ── WIND (per-layer responsiveness) ─────────────────────
           const wf = WIND_FACTOR[ud.layer];
           p.position.x += windForce.x * wf * 0.01;
           p.position.y += windForce.y * wf * 0.01;
         }
 
-        // ── OPACITY LIFECYCLE: sin(life*PI) fade in→hold→out ───────
         ud.life += ud.lifeSpeed;
-        if (ud.life >= 1) ud.life = 0;          // recycle the fade cycle
+        if (ud.life >= 1) ud.life = 0;
         p.material.opacity = Math.sin(ud.life * Math.PI) * ud.maxOpacity;
 
-        // ── RECYCLE when it drifts too high ────────────────────────
         if (p.position.y > 7) {
           const [xMin, xMax] = layerRanges[ud.layer];
-          p.position.y = -3 + Math.random();          // back to the bottom
+          p.position.y = -3 + Math.random();
           p.position.x = rand(xMin, xMax);
-          ud.life      = 0;                            // fade back in from 0
+          ud.life      = 0;
         }
 
-        // ── PALETTE COLOUR TWEEN ───────────────────────────────────
         if (ud.colorTo && ud.colorT < 1) {
           ud.colorT = Math.min(1, ud.colorT + COLOR_TWEEN_SPEED);
           p.material.color.copy(ud.colorFrom).lerp(ud.colorTo, ud.colorT);
           if (ud.colorT >= 1) ud.colorTo = null;
         }
 
-        // ── BILLBOARD: always face the camera ──────────────────────
-        //  Done after moving so the plane faces the camera this frame.
         p.lookAt(camera.position);
       }
 
-      // ── Glow plane colour tween + billboard ───────────────────────
       glowPlanes.forEach(g => {
         if (g.userData.colorTo && g.userData.colorT < 1) {
           g.userData.colorT = Math.min(1, g.userData.colorT + COLOR_TWEEN_SPEED);
@@ -490,10 +448,6 @@
         g.lookAt(camera.position);
       });
 
-      // ── DEPTH SORTING ────────────────────────────────────────────
-      //  Transparent planes blend correctly only when drawn far→near.
-      //  renderOrder by camera distance enforces that ordering.
-      //  On mobile we only re-sort every 5th frame to save CPU.
       if (!isMobile || frame % 5 === 0) {
         for (let i = 0; i < particles.length; i++) {
           const d = particles[i].position.distanceTo(camera.position);
@@ -501,7 +455,6 @@
         }
       }
 
-      // ── Slow camera drift makes static smoke feel alive ───────────
       camera.position.x = Math.sin(time * 0.15) * 0.4;
       camera.position.y = Math.cos(time * 0.12) * 0.2;
       camera.lookAt(0, 0, 0);

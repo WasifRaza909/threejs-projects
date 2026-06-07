@@ -19,43 +19,61 @@
       width: 100vw; height: 100vh;
       z-index: -1;
     }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      color: #fff;
-      text-align: center;
-    }
-
-    .overlay h1 {
-      font-size: clamp(2.5rem, 8vw, 6rem);
-      font-weight: 200;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-    }
-
-    .overlay p {
-      margin-top: 1rem;
-      font-size: clamp(0.8rem, 2vw, 1.1rem);
-      letter-spacing: 0.15em;
-      opacity: 0.6;
-      text-transform: uppercase;
-    }
   </style>
 </head>
 <body>
 
-  <div class="overlay">
-    <h1>Galaxy Spiral</h1>
-    <p>Three.js Hero Background — Effect 04</p>
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 04 / 10
+  </a>
+
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Galaxy Spiral</p>
   </div>
 
-  <script type="importmap">
+<script type="importmap">
     {
       "imports": {
         "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
@@ -65,80 +83,61 @@
 
   <script type="module">
     import * as THREE from 'three';
+    // ??? Configuration ? edit these values to customise the effect ???????????????
+    const CONFIG = {
+      // Total star particles
+      particleCount: 80000,
+      // Number of spiral arms
+      arms: 2,
+      // Galaxy radius (how spread out it is)
+      radius: 7,
+      // Colour of inner/core stars (hot, bright)
+      innerColor: '#ffdd88',
+      // Colour of outer/edge stars (cool, dim)
+      outerColor: '#3322ff',
+      // How tightly particles cluster around arms (higher = tighter arms)
+      armTightness: 1.4,
+      // How scattered particles are away from arm lines
+      spread: 0.45,
+      // Galaxy rotation speed (keep very low for realism)
+      rotationSpeed: 0.00025,
+      // Camera vertical bob speed
+      bobSpeed: 0.3,
+    };
+   const scene = new THREE.Scene();
 
-    // ─── TUNABLE PARAMETERS ─────────────────────────────────────────────────────
-    // Change PARTICLE_COUNT for density vs. performance trade-off.
-    const PARTICLE_COUNT = 80_000;
-
-    // Change ARMS to get a different galaxy shape (2 = classic Milky Way, 3–5 = exotic).
-    const ARMS = 2;
-
-    // RADIUS controls how far particles spread from the centre (world units).
-    const RADIUS = 7;
-
-    // SPIN_FACTOR: higher values = tighter, more wound arms.
-    const SPIN_FACTOR = 1.4;
-
-    // SPREAD: how loosely particles scatter away from each arm's centreline.
-    const SPREAD = 0.45;
-
-    // ROTATION_SPEED: radians per frame. Lower = more realistic, higher = dramatic.
-    const ROTATION_SPEED = 0.00025;
-
-    // innerColor: core colour (warm yellow-white). outerColor: edge colour (deep blue-purple).
-    const innerColor = new THREE.Color('#ffdd88');
-    const outerColor = new THREE.Color('#3322ff');
-    // ─────────────────────────────────────────────────────────────────────────────
-
-    // Scene
-    const scene = new THREE.Scene();
-
-    // Camera
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(0, 3, 7);
     camera.lookAt(0, 0, 0);
 
-    // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     document.body.appendChild(renderer.domElement);
 
-    // ─── BUILD GALAXY ────────────────────────────────────────────────────────────
-    const positions = new Float32Array(PARTICLE_COUNT * 3);
-    const colors    = new Float32Array(PARTICLE_COUNT * 3);
+    const positions = new Float32Array(CONFIG.particleCount * 3);
+    const colors    = new Float32Array(CONFIG.particleCount * 3);
 
     const colorLerp = new THREE.Color();
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < CONFIG.particleCount; i++) {
       const i3 = i * 3;
-
-      // Power curve: concentrates particles toward the centre.
-      const r = Math.pow(Math.random(), 1.5) * RADIUS;
-
-      // Which arm this particle belongs to.
-      const armAngle  = (i % ARMS) / ARMS * Math.PI * 2;
-
-      // Outer particles rotate more = spiral arms wind outward.
-      const spinAngle = r * SPIN_FACTOR;
-
+      const r = Math.pow(Math.random(), 1.5) * CONFIG.radius;
+      const armAngle  = (i % CONFIG.arms) / CONFIG.arms * Math.PI * 2;
+      const spinAngle = r * CONFIG.armTightness;
       const angle = armAngle + spinAngle;
-
-      // Cube power = tight core, loose wispy edges.
-      const randomSpread = Math.pow(Math.random(), 3) * SPREAD;
+      const randomSpread = Math.pow(Math.random(), 3) * CONFIG.spread;
       const randomX = (Math.random() - 0.5) * 2;
       const randomZ = (Math.random() - 0.5) * 2;
       const randomY = (Math.random() - 0.5) * 2;
 
       positions[i3    ] = Math.cos(angle) * r + randomX * randomSpread;
-      // Thin disk: vertical scatter scales with radius and spread.
+
       positions[i3 + 1] = randomY * 0.25 * r * randomSpread;
       positions[i3 + 2] = Math.sin(angle) * r + randomZ * randomSpread;
 
-      // Colour: lerp from innerColor (core) to outerColor (edges).
-      colorLerp.lerpColors(innerColor, outerColor, r / RADIUS);
+      colorLerp.lerpColors(new THREE.Color(CONFIG.innerColor), new THREE.Color(CONFIG.outerColor), r / CONFIG.radius);
 
-      // Slight per-particle variation so the galaxy doesn't look flat.
       colors[i3    ] = THREE.MathUtils.clamp(colorLerp.r + (Math.random() - 0.5) * 0.1, 0, 1);
       colors[i3 + 1] = THREE.MathUtils.clamp(colorLerp.g + (Math.random() - 0.5) * 0.1, 0, 1);
       colors[i3 + 2] = THREE.MathUtils.clamp(colorLerp.b + (Math.random() - 0.5) * 0.1, 0, 1);
@@ -148,9 +147,6 @@
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute('color',    new THREE.BufferAttribute(colors,    3));
 
-    // AdditiveBlending is the key to the glow / nebula look:
-    // overlapping particles ADD their light together instead of covering each other,
-    // creating bright cores and soft glowing halos automatically.
     const material = new THREE.PointsMaterial({
       size:           0.008,
       vertexColors:   true,
@@ -162,34 +158,23 @@
 
     const galaxy = new THREE.Points(geometry, material);
     scene.add(galaxy);
-    // ─────────────────────────────────────────────────────────────────────────────
 
-    // ─── MOUSE TRACKING ──────────────────────────────────────────────────────────
     const mouse = { x: 0, y: 0 };
     const cameraTarget = { x: camera.position.x, y: camera.position.y };
 
     window.addEventListener('mousemove', (e) => {
-      // Normalise to [-1, 1]
+
       mouse.x = (e.clientX / window.innerWidth  - 0.5) * 2;
       mouse.y = (e.clientY / window.innerHeight - 0.5) * 2;
     });
-    // ─────────────────────────────────────────────────────────────────────────────
 
-    // ─── ANIMATION LOOP ──────────────────────────────────────────────────────────
     const clock = new THREE.Clock();
 
     function animate() {
       requestAnimationFrame(animate);
-
       const elapsed = clock.getElapsedTime();
-
-      // Slow galaxy rotation — realistic spiral galaxy drift.
-      galaxy.rotation.y += ROTATION_SPEED;
-
-      // Gentle vertical camera bob gives a sense of drifting through space.
-      const baseY = 3 + Math.sin(elapsed * 0.3) * 0.8;
-
-      // Smooth mouse influence (factor 0.01 = very subtle parallax).
+      galaxy.rotation.y += CONFIG.rotationSpeed;
+      const baseY = 3 + Math.sin(elapsed * CONFIG.bobSpeed) * 0.8;
       cameraTarget.x += (mouse.x * 0.6 - cameraTarget.x) * 0.01;
       cameraTarget.y += (-mouse.y * 0.4 - (cameraTarget.y - baseY)) * 0.01;
 
@@ -201,16 +186,14 @@
     }
 
     animate();
-    // ─────────────────────────────────────────────────────────────────────────────
 
-    // ─── RESIZE ──────────────────────────────────────────────────────────────────
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     });
-    // ─────────────────────────────────────────────────────────────────────────────
+
   </script>
 </body>
 </html>
