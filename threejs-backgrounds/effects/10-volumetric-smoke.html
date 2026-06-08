@@ -117,8 +117,8 @@
   </div>
 
   <div class="palette">
-    <button data-palette="dark" class="active">Dark</button>
-    <button data-palette="purple">Purple</button>
+    <button data-palette="dark" >Dark</button>
+    <button data-palette="purple" class="active">Purple</button>
     <button data-palette="inferno">Inferno</button>
   </div>
   <script type="module">
@@ -170,7 +170,7 @@
         lights: ['#7c2d12', '#b45309', '#7f1d1d'],
       },
     };
-    let currentPalette = 'dark';
+    let currentPalette = 'purple';
 
     const canvas   = document.getElementById('bg-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
