@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>05 — Noise Terrain</title>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #000000;
+      color: #ffffff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+      "simplex-noise": "https://cdn.jsdelivr.net/npm/simplex-noise@4.0.1/dist/esm/simplex-noise.js"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 05 / 10
+  </a>
+
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Noise Terrain</p>
+  </div>
+
+<div id="canvas-container"></div>
+<script type="module">
+    import * as THREE from 'three';
+    import { createNoise2D } from 'simplex-noise';
+    // ??? Configuration ? edit these values to customise the effect ???????????????
+    const CONFIG = {
+      // Wireframe colour
+      terrainColor: '#00ff88',
+      // How tall the hills are
+      terrainHeight: 3.2,
+      // How zoomed in the noise is (lower = bigger hills, higher = more detail)
+      noiseScale: 0.18,
+      // How fast terrain scrolls toward the viewer
+      scrollSpeed: 0.12,
+      // Wireframe opacity (0 to 1)
+      opacity: 0.55,
+      // Fog density (higher = more fog, shorter visible distance)
+      fogDensity: 0.022,
+      // Camera height above terrain
+      cameraHeight: 2.5,
+      // Second terrain layer opacity (depth effect)
+      secondLayerOpacity: 0.2,
+    };
+    const noise2D = createNoise2D();
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 1);
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+
+    scene.fog = new THREE.FogExp2(0x000000, CONFIG.fogDensity);
+
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 500);
+    camera.position.set(0, CONFIG.cameraHeight, 5);
+    camera.lookAt(0, 1.5, -10);
+
+    function sampleHeight(x, z) {
+      return noise2D(x * CONFIG.noiseScale, z * CONFIG.noiseScale * 0.67) * (CONFIG.terrainHeight - 0.4)
+           + noise2D(x * CONFIG.noiseScale * 2.22, z * CONFIG.noiseScale * 1.94) * 0.6;
+    }
+
+    function createTerrain(offsetX, offsetY, color, opacity, scrollSpeed) {
+      const geometry = new THREE.PlaneGeometry(20, 60, 36, 100);
+      geometry.rotateX(-Math.PI / 2);
+
+      const pos = geometry.attributes.position;
+
+      const localX = new Float32Array(pos.count);
+      const localZ = new Float32Array(pos.count);
+      for (let i = 0; i < pos.count; i++) {
+        localX[i] = pos.getX(i);
+        localZ[i] = pos.getZ(i);
+      }
+
+      for (let i = 0; i < pos.count; i++) {
+        pos.setY(i, sampleHeight(localX[i], localZ[i]));
+      }
+      pos.needsUpdate = true;
+
+      const material = new THREE.MeshBasicMaterial({
+        color,
+        wireframe:   true,
+        transparent: true,
+        opacity,
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(offsetX, offsetY, 0);
+      scene.add(mesh);
+
+      return { pos, localX, localZ, scrollSpeed, offset: 0 };
+    }
+
+    const primary   = createTerrain(0,    0,     CONFIG.terrainColor, CONFIG.opacity, CONFIG.scrollSpeed);
+    const secondary = createTerrain(0.3, -0.15,  CONFIG.terrainColor, CONFIG.secondLayerOpacity, CONFIG.scrollSpeed * 0.65);
+
+    function updateTerrain(layer) {
+      layer.offset += layer.scrollSpeed;
+      const { pos, localX, localZ, offset } = layer;
+      for (let i = 0; i < pos.count; i++) {
+        pos.setY(i, sampleHeight(localX[i], localZ[i] - offset));
+      }
+      pos.needsUpdate = true;
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    let time = 0;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.016;
+
+      camera.position.y = CONFIG.cameraHeight + Math.sin(time * 0.4) * 0.15;
+
+      updateTerrain(primary);
+      updateTerrain(secondary);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galaxy Spiral — Three.js Background 04</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #000005;
+      overflow: hidden;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 04 / 10
+  </a>
+
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Galaxy Spiral</p>
+  </div>
+
+<script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    // ??? Configuration ? edit these values to customise the effect ???????????????
+    const CONFIG = {
+      // Total star particles
+      particleCount: 80000,
+      // Number of spiral arms
+      arms: 2,
+      // Galaxy radius (how spread out it is)
+      radius: 7,
+      // Colour of inner/core stars (hot, bright)
+      innerColor: '#ffdd88',
+      // Colour of outer/edge stars (cool, dim)
+      outerColor: '#3322ff',
+      // How tightly particles cluster around arms (higher = tighter arms)
+      armTightness: 1.4,
+      // How scattered particles are away from arm lines
+      spread: 0.45,
+      // Galaxy rotation speed (keep very low for realism)
+      rotationSpeed: 0.00025,
+      // Camera vertical bob speed
+      bobSpeed: 0.3,
+    };
+   const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 3, 7);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.body.appendChild(renderer.domElement);
+
+    const positions = new Float32Array(CONFIG.particleCount * 3);
+    const colors    = new Float32Array(CONFIG.particleCount * 3);
+
+    const colorLerp = new THREE.Color();
+
+    for (let i = 0; i < CONFIG.particleCount; i++) {
+      const i3 = i * 3;
+      const r = Math.pow(Math.random(), 1.5) * CONFIG.radius;
+      const armAngle  = (i % CONFIG.arms) / CONFIG.arms * Math.PI * 2;
+      const spinAngle = r * CONFIG.armTightness;
+      const angle = armAngle + spinAngle;
+      const randomSpread = Math.pow(Math.random(), 3) * CONFIG.spread;
+      const randomX = (Math.random() - 0.5) * 2;
+      const randomZ = (Math.random() - 0.5) * 2;
+      const randomY = (Math.random() - 0.5) * 2;
+
+      positions[i3    ] = Math.cos(angle) * r + randomX * randomSpread;
+
+      positions[i3 + 1] = randomY * 0.25 * r * randomSpread;
+      positions[i3 + 2] = Math.sin(angle) * r + randomZ * randomSpread;
+
+      colorLerp.lerpColors(new THREE.Color(CONFIG.innerColor), new THREE.Color(CONFIG.outerColor), r / CONFIG.radius);
+
+      colors[i3    ] = THREE.MathUtils.clamp(colorLerp.r + (Math.random() - 0.5) * 0.1, 0, 1);
+      colors[i3 + 1] = THREE.MathUtils.clamp(colorLerp.g + (Math.random() - 0.5) * 0.1, 0, 1);
+      colors[i3 + 2] = THREE.MathUtils.clamp(colorLerp.b + (Math.random() - 0.5) * 0.1, 0, 1);
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color',    new THREE.BufferAttribute(colors,    3));
+
+    const material = new THREE.PointsMaterial({
+      size:           0.008,
+      vertexColors:   true,
+      sizeAttenuation: true,
+      transparent:    true,
+      depthWrite:     false,
+      blending:       THREE.AdditiveBlending,
+    });
+
+    const galaxy = new THREE.Points(geometry, material);
+    scene.add(galaxy);
+
+    const mouse = { x: 0, y: 0 };
+    const cameraTarget = { x: camera.position.x, y: camera.position.y };
+
+    window.addEventListener('mousemove', (e) => {
+
+      mouse.x = (e.clientX / window.innerWidth  - 0.5) * 2;
+      mouse.y = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+      galaxy.rotation.y += CONFIG.rotationSpeed;
+      const baseY = 3 + Math.sin(elapsed * CONFIG.bobSpeed) * 0.8;
+      cameraTarget.x += (mouse.x * 0.6 - cameraTarget.x) * 0.01;
+      cameraTarget.y += (-mouse.y * 0.4 - (cameraTarget.y - baseY)) * 0.01;
+
+      camera.position.x = cameraTarget.x;
+      camera.position.y = baseY + (cameraTarget.y - baseY);
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
+
+  </script>
+</body>
+</html>

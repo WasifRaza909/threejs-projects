@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Morphing Blob — Effect 03</title>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #0d0221 0%, #000000 75%);
+    overflow: hidden;
+  }
+
+  body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  #scene {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 03 / 10
+  </a>
+
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Morphing Blob</p>
+  </div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+    "simplex-noise": "https://cdn.jsdelivr.net/npm/simplex-noise@4.0.1/dist/esm/simplex-noise.js"
+  }
+}
+</script>
+
+<script type="module">
+  import * as THREE from 'three';
+  import { createNoise3D } from 'simplex-noise';
+    // ??? Configuration ? edit these values to customise the effect ???????????????
+  const CONFIG = {
+    // Base blob colour
+    blobColor: '#7c3aed',
+    // How much the surface morphs (0 = perfect sphere, 1 = extreme distortion)
+    morphStrength: 0.45,
+    // Speed of morphing animation
+    morphSpeed: 0.004,
+    // Colour of first orbiting light (purple by default)
+    light1Color: '#8b5cf6',
+    // Colour of second orbiting light (cyan by default)
+    light2Color: '#06b6d4',
+    // Colour of third orbiting light (pink by default)
+    light3Color: '#ec4899',
+    // Light brightness (higher = more dramatic)
+    lightIntensity: 4,
+    // How strongly mouse rotates the blob
+    mouseInfluence: 0.4,
+    // Blob size
+    blobRadius: 2.2,
+  };
+    const canvas = document.getElementById('scene');
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x000000, 8, 20);
+
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 6);
+  camera.lookAt(0, 0, 0);
+
+  const geometry = new THREE.IcosahedronGeometry(CONFIG.blobRadius, 64);
+
+  const origPositions = new Float32Array(geometry.attributes.position.array);
+
+  const material = new THREE.MeshStandardMaterial({
+    color:     new THREE.Color(CONFIG.blobColor),
+    metalness: 0.85,
+    roughness: 0.15,
+    wireframe: false
+  });
+
+  const blob = new THREE.Mesh(geometry, material);
+  scene.add(blob);
+
+  const noise3D = createNoise3D();
+
+  const ambient = new THREE.AmbientLight(0x1a0a2e, 0.3);
+  scene.add(ambient);
+
+  const light1 = new THREE.PointLight(CONFIG.light1Color, CONFIG.lightIntensity, 12);
+  const light2 = new THREE.PointLight(CONFIG.light2Color, CONFIG.lightIntensity, 12);
+  const light3 = new THREE.PointLight(CONFIG.light3Color, CONFIG.lightIntensity * 0.5, 8);
+  scene.add(light1, light2, light3);
+
+  const mouse = { x: 0, y: 0 };
+  window.addEventListener('mousemove', (e) => {
+    mouse.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  });
+
+  let time = 0;
+  let cameraAngle = 0;
+  const pos = geometry.attributes.position;
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    time += CONFIG.morphSpeed;
+
+    for (let i = 0; i < pos.count; i++) {
+      const ix = i * 3;
+      const ox = origPositions[ix];
+      const oy = origPositions[ix + 1];
+      const oz = origPositions[ix + 2];
+
+      const n = noise3D(
+        ox * 0.35 + time,
+        oy * 0.35 + time,
+        oz * 0.35
+      );
+      const scale = 1.0 + n * CONFIG.morphStrength;
+
+      pos.array[ix]     = ox * scale;
+      pos.array[ix + 1] = oy * scale;
+      pos.array[ix + 2] = oz * scale;
+    }
+    pos.needsUpdate = true;
+    geometry.computeVertexNormals();
+
+    light1.position.set( Math.sin(time * 0.7) * 5, Math.cos(time * 0.5) * 3,  2);
+    light2.position.set(-Math.sin(time * 0.7) * 5, Math.cos(time * 0.8) * 3, -2);
+    light3.position.set(0, Math.sin(time * 1.2) * 4, Math.cos(time) * 3);
+
+    blob.rotation.y += (mouse.x * CONFIG.mouseInfluence - blob.rotation.y) * 0.02;
+    blob.rotation.x += (mouse.y * -CONFIG.mouseInfluence * 0.5 - blob.rotation.x) * 0.02;
+
+    cameraAngle += 0.0004;
+    camera.position.x = Math.sin(cameraAngle) * 6;
+    camera.position.z = Math.cos(cameraAngle) * 6;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+</body>
+</html>

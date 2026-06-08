@@ -1,0 +1,8 @@
+Three.js Hero Backgrounds Pack
+
+Built with:
+
+  - Three.js r158 (https://threejs.org) — MIT License
+  - simplex-noise v4 (https://github.com/jwagner/simplex-noise) — MIT License
+
+Both libraries are loaded via CDN and are subject to their own licenses.

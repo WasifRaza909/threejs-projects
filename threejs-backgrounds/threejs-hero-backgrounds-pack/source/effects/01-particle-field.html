@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interactive Particle Field — Product 01</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  #scene {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 01 / 10
+  </a>
+
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Particle Field</p>
+  </div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.158.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+  import * as THREE from 'three';
+    // ??? Configuration ? edit these values to customise the effect ???????????????
+  const CONFIG = {
+    // Total number of floating particles
+    particleCount: 6000,
+    // Particle colour (hex)
+    particleColor: '#7eb8f7',
+    // How far particles spread across the scene
+    spread: 6,
+    // How strongly mouse repels particles (0 = no repulsion, 1 = strong)
+    repulsionStrength: 0.09,
+    // Radius around mouse that triggers repulsion
+    repulsionRadius: 2,
+    // Speed particles return to original position after repulsion
+    returnSpeed: 0.04,
+    // Particle size
+    particleSize: 0.025,
+  };
+    const canvas = document.getElementById('scene');
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x050510, 1);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x050510);
+
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 4;
+
+  function makeCircleTexture() {
+    const size = 64;
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    const ctx = c.getContext('2d');
+
+    const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    grad.addColorStop(0.0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.4, 'rgba(255,255,255,1)');
+    grad.addColorStop(1.0, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+    ctx.fill();
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  const positions = new Float32Array(CONFIG.particleCount * 3);
+  const origPositions = new Float32Array(CONFIG.particleCount * 3);
+
+  for (let i = 0; i < CONFIG.particleCount; i++) {
+    const ix = i * 3;
+    const x = (Math.random() * 2 - 1) * CONFIG.spread;
+    const y = (Math.random() * 2 - 1) * CONFIG.spread;
+    const z = (Math.random() * 2 - 1) * 2;
+    positions[ix]     = x;
+    positions[ix + 1] = y;
+    positions[ix + 2] = z;
+    origPositions[ix]     = x;
+    origPositions[ix + 1] = y;
+    origPositions[ix + 2] = z;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const material = new THREE.PointsMaterial({
+    size: CONFIG.particleSize,
+    color: new THREE.Color(CONFIG.particleColor),
+    transparent: true,
+    opacity: 0.85,
+    alphaMap: makeCircleTexture(),
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+
+  const points = new THREE.Points(geometry, material);
+  scene.add(points);
+
+  const mouse = new THREE.Vector2(-10, -10);
+  let pointerActive = false;
+
+  const isMobile = window.innerWidth < 768;
+
+  if (!isMobile) {
+    window.addEventListener('mousemove', (e) => {
+      pointerActive = true;
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+    document.addEventListener('mouseleave', () => {
+      pointerActive = false;
+      mouse.set(-10, -10);
+    });
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    const posAttr = geometry.attributes.position;
+    const arr = posAttr.array;
+
+    if (!isMobile && pointerActive) {
+      const mx = mouse.x * CONFIG.spread;
+      const my = mouse.y * CONFIG.spread;
+
+      for (let i = 0; i < CONFIG.particleCount; i++) {
+        const ix = i * 3;
+        const px = arr[ix];
+        const py = arr[ix + 1];
+
+        const dx = px - mx;
+        const dy = py - my;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < CONFIG.repulsionRadius && dist > 0.0001) {
+          const force = (1 - dist / CONFIG.repulsionRadius) * CONFIG.repulsionStrength;
+          arr[ix]     += (dx / dist) * force;
+          arr[ix + 1] += (dy / dist) * force;
+        }
+
+        arr[ix]     += (origPositions[ix]     - arr[ix])     * CONFIG.returnSpeed;
+        arr[ix + 1] += (origPositions[ix + 1] - arr[ix + 1]) * CONFIG.returnSpeed;
+        arr[ix + 2] += (origPositions[ix + 2] - arr[ix + 2]) * CONFIG.returnSpeed;
+      }
+      posAttr.needsUpdate = true;
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volumetric Smoke — Three.js Hero Background</title>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three":         "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/",
+        "simplex-noise": "https://cdn.jsdelivr.net/npm/simplex-noise@4.0.1/dist/esm/simplex-noise.js"
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #000000;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+      display: block;
+    }
+
+    .palette {
+      position: absolute;
+      top: 58px;
+      right: 1.25rem;
+      z-index: 10;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .palette button {
+      padding: 0.45rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 1.5rem;
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(6px);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .palette button:hover,
+    .palette button.active {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.6);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 10 / 10
+  </a>
+
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Volumetric Smoke</p>
+  </div>
+
+  <div class="palette">
+    <button data-palette="dark" >Dark</button>
+    <button data-palette="purple" class="active">Purple</button>
+    <button data-palette="inferno">Inferno</button>
+  </div>
+  <script type="module">
+    import * as THREE        from 'three';
+    import { createNoise3D } from 'simplex-noise';
+    // ??? Configuration ? edit these values to customise the effect ???????????????
+    const CONFIG = {
+      // Total smoke particle count
+      particleCount: 180,
+      // How fast smoke drifts upward
+      driftSpeed: 0.0015,
+      // Maximum particle opacity (keep low for atmospheric look)
+      maxOpacity: 0.08,
+      // Colour of ground fog layer
+      smokeDarkColor: '#1a1a2e',
+      // Colour of mid smoke layer
+      smokeMidColor: '#2d1b4e',
+      // Noise animation speed (lower = slower, dreamier)
+      noiseSpeed: 0.0008,
+      // How strongly mouse creates wind
+      windStrength: 0.3,
+      // Colour of first atmospheric light
+      light1Color: '#3b0764',
+      // Colour of second atmospheric light
+      light2Color: '#0c4a6e',
+      // Colour of third atmospheric light
+      light3Color: '#450a0a',
+    };
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+                  || window.innerWidth < 768;
+
+    const TOTAL_PARTICLES = isMobile ? Math.round(CONFIG.particleCount * 0.44) : CONFIG.particleCount;
+
+    const TIME_STEP    = CONFIG.noiseSpeed;
+    const WIND_STRENGTH = { x: CONFIG.windStrength, y: CONFIG.windStrength * 0.33 };
+
+    const PALETTES = {
+      dark: {
+
+        smoke:  [[CONFIG.smokeDarkColor, 0.8], [CONFIG.smokeMidColor, 0.1], ['#0d1f2d', 0.1]],
+        lights: [CONFIG.light1Color, CONFIG.light2Color, CONFIG.light3Color],
+      },
+      purple: {
+        smoke:  [['#2d1b69', 0.8], ['#3b0764', 0.1], ['#1e1b4b', 0.1]],
+        lights: ['#6b21a8', '#7c3aed', '#4c1d95'],
+      },
+      inferno: {
+        smoke:  [['#1c0a00', 0.8], ['#2b1100', 0.1], ['#1a0500', 0.1]],
+        lights: ['#7c2d12', '#b45309', '#7f1d1d'],
+      },
+    };
+    let currentPalette = 'purple';
+
+    const canvas   = document.getElementById('bg-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene  = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+      75, window.innerWidth / window.innerHeight, 0.1, 100
+    );
+    camera.position.set(0, 0, 8);
+    camera.lookAt(0, 0, 0);
+
+    const noise3D = createNoise3D();
+
+    function makeSmokeTexture() {
+      const size = 128;
+      const c    = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx  = c.getContext('2d');
+
+      ctx.clearRect(0, 0, size, size);
+
+      function blob(cx, cy, r) {
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0.0, 'rgba(255,255,255,1.0)');
+        g.addColorStop(0.4, 'rgba(255,255,255,0.3)');
+        g.addColorStop(1.0, 'rgba(0,0,0,0.0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const mid = size / 2;
+
+      blob(mid, mid, mid * 0.9);
+
+      for (let i = 0; i < 5; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist  = Math.random() * mid * 0.4;
+        blob(
+          mid + Math.cos(angle) * dist,
+          mid + Math.sin(angle) * dist,
+          mid * (0.3 + Math.random() * 0.4)
+        );
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.needsUpdate = true;
+      return tex;
+    }
+    const smokeTexture = makeSmokeTexture();
+
+    function pickWeightedColor(weighted) {
+      const total = weighted.reduce((s, [, w]) => s + w, 0);
+      let r = Math.random() * total;
+      for (const [hex, w] of weighted) {
+        if ((r -= w) <= 0) return new THREE.Color(hex);
+      }
+      return new THREE.Color(weighted[0][0]);
+    }
+
+    const particles = [];
+
+    const layerCounts = [
+      Math.round(TOTAL_PARTICLES * 0.44),
+      Math.round(TOTAL_PARTICLES * 0.33),
+      0,
+    ];
+    layerCounts[2] = TOTAL_PARTICLES - layerCounts[0] - layerCounts[1];
+
+    const layerRanges = {
+      1: [-10, 10, -3,   -0.5, -5, 2],
+      2: [ -8,  8, -0.5,  2.5, -6, 1],
+      3: [ -6,  6,  2.5,  5,   -7, 0],
+    };
+
+    function rand(min, max) { return min + Math.random() * (max - min); }
+
+    function spawnParticle(layer) {
+      const [xMin, xMax, yMin, yMax, zMin, zMax] = layerRanges[layer];
+
+      const size = rand(2.5, 6.0);
+      const geo  = new THREE.PlaneGeometry(size, size);
+
+      const maxOpacity = rand(CONFIG.maxOpacity * 0.31, CONFIG.maxOpacity);
+      const mat = new THREE.MeshBasicMaterial({
+        map:         smokeTexture,
+        transparent: true,
+        opacity:     maxOpacity,
+        depthWrite:  false,
+        blending:    THREE.NormalBlending,
+        side:        THREE.DoubleSide,
+        color:       pickWeightedColor(PALETTES[currentPalette].smoke),
+      });
+
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(rand(xMin, xMax), rand(yMin, yMax), rand(zMin, zMax));
+
+      const dir = new THREE.Vector3(
+        rand(-1, 1),
+        rand(0.3, 1),
+        rand(-1, 1)
+      ).normalize();
+
+      mesh.userData = {
+        originalPosition: mesh.position.clone(),
+        driftSpeed:       rand(0.08, 0.22),
+        driftDirection:   dir,
+        rotationSpeed:    rand(-0.0015, 0.0015),
+        noiseOffset:      rand(0, 1000),
+        layer:            layer,
+        maxOpacity:       maxOpacity,
+
+        life:             Math.random(),
+        lifeSpeed:        rand(0.0008, 0.002),
+      };
+
+      mesh.rotation.z = Math.random() * Math.PI * 2;
+      scene.add(mesh);
+      particles.push(mesh);
+    }
+
+    [1, 2, 3].forEach(layer => {
+      for (let i = 0; i < layerCounts[layer - 1]; i++) spawnParticle(layer);
+    });
+
+    function makeGlowTexture() {
+      const size = 128;
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+      return new THREE.CanvasTexture(c);
+    }
+    const glowTexture = makeGlowTexture();
+
+    const glowConfigs = [
+      { pos: [-4, -1, 3], size: 6 },
+      { pos: [ 4,  1, 2], size: 6 },
+      { pos: [ 0,  3, 1], size: 5 },
+    ];
+    const glowPlanes = glowConfigs.map((cfg, i) => {
+      const mesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(cfg.size, cfg.size),
+        new THREE.MeshBasicMaterial({
+          map:         glowTexture,
+          transparent: true,
+          opacity:     0.15,
+          depthWrite:  false,
+          blending:    THREE.AdditiveBlending,
+          color:       new THREE.Color(PALETTES[currentPalette].lights[i]),
+        })
+      );
+      mesh.position.set(...cfg.pos);
+      mesh.renderOrder = -1;
+      scene.add(mesh);
+      return mesh;
+    });
+
+    const mouse     = { x: 0, y: 0 };
+    const windForce = { x: 0, y: 0 };
+    window.addEventListener('mousemove', (e) => {
+      mouse.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+    window.addEventListener('touchmove', (e) => {
+      if (!e.touches[0]) return;
+      mouse.x =  (e.touches[0].clientX / window.innerWidth)  * 2 - 1;
+      mouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+    }, { passive: true });
+
+    const WIND_FACTOR = { 1: 0.4, 2: 0.7, 3: 1.0 };
+
+    let paletteTween = null;
+
+    function switchPalette(name) {
+      if (!PALETTES[name] || name === currentPalette) return;
+      currentPalette = name;
+
+      particles.forEach(p => {
+        p.userData.colorFrom = p.material.color.clone();
+        p.userData.colorTo   = pickWeightedColor(PALETTES[name].smoke);
+        p.userData.colorT    = 0;
+      });
+
+      glowPlanes.forEach((g, i) => {
+        g.userData.colorFrom = g.material.color.clone();
+        g.userData.colorTo   = new THREE.Color(PALETTES[name].lights[i]);
+        g.userData.colorT    = 0;
+      });
+      paletteTween = true;
+
+      document.querySelectorAll('.palette button').forEach(b =>
+        b.classList.toggle('active', b.dataset.palette === name));
+    }
+
+    document.querySelectorAll('.palette button').forEach(btn => {
+      btn.addEventListener('click', () => switchPalette(btn.dataset.palette));
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    let time  = 0;
+    let frame = 0;
+    const COLOR_TWEEN_SPEED = 1 / 90;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      time += TIME_STEP;
+      frame++;
+
+      windForce.x += (mouse.x * WIND_STRENGTH.x - windForce.x) * 0.02;
+      windForce.y += (mouse.y * WIND_STRENGTH.y - windForce.y) * 0.02;
+
+      const stride = isMobile ? 2 : 1;
+      const phase  = isMobile ? (frame % 2) : 0;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p  = particles[i];
+        const ud = p.userData;
+        const doNoise = (stride === 1) || (i % 2 === phase);
+
+        if (doNoise) {
+          const nX = noise3D(ud.noiseOffset,        time * 0.4, 0) * 0.6;
+          const nY = noise3D(ud.noiseOffset + 100,  time * 0.3, 0) * 0.3;
+          const nZ = noise3D(ud.noiseOffset + 200,  time * 0.35, 0) * 0.4;
+
+          p.position.x += (nX - p.position.x * 0.001) * ud.driftSpeed * 0.02;
+          p.position.y += (CONFIG.driftSpeed + nY * 0.001) * ud.driftSpeed;
+          p.position.z += nZ * 0.008;
+          p.rotation.z += ud.rotationSpeed;
+
+          const wf = WIND_FACTOR[ud.layer];
+          p.position.x += windForce.x * wf * 0.01;
+          p.position.y += windForce.y * wf * 0.01;
+        }
+
+        ud.life += ud.lifeSpeed;
+        if (ud.life >= 1) ud.life = 0;
+        p.material.opacity = Math.sin(ud.life * Math.PI) * ud.maxOpacity;
+
+        if (p.position.y > 7) {
+          const [xMin, xMax] = layerRanges[ud.layer];
+          p.position.y = -3 + Math.random();
+          p.position.x = rand(xMin, xMax);
+          ud.life      = 0;
+        }
+
+        if (ud.colorTo && ud.colorT < 1) {
+          ud.colorT = Math.min(1, ud.colorT + COLOR_TWEEN_SPEED);
+          p.material.color.copy(ud.colorFrom).lerp(ud.colorTo, ud.colorT);
+          if (ud.colorT >= 1) ud.colorTo = null;
+        }
+
+        p.lookAt(camera.position);
+      }
+
+      glowPlanes.forEach(g => {
+        if (g.userData.colorTo && g.userData.colorT < 1) {
+          g.userData.colorT = Math.min(1, g.userData.colorT + COLOR_TWEEN_SPEED);
+          g.material.color.copy(g.userData.colorFrom).lerp(g.userData.colorTo, g.userData.colorT);
+          if (g.userData.colorT >= 1) g.userData.colorTo = null;
+        }
+        g.lookAt(camera.position);
+      });
+
+      if (!isMobile || frame % 5 === 0) {
+        for (let i = 0; i < particles.length; i++) {
+          const d = particles[i].position.distanceTo(camera.position);
+          particles[i].renderOrder = Math.floor(d * 10);
+        }
+      }
+
+      camera.position.x = Math.sin(time * 0.15) * 0.4;
+      camera.position.y = Math.cos(time * 0.12) * 0.2;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

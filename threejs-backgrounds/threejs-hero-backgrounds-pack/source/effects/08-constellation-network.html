@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Constellation Network — Three.js Hero Background (Effect 08)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  html { background: #03050f; }
+  body { background: transparent; }
+
+  #bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    display: block;
+  }
+
+  .themes {
+    position: fixed;
+    top: 58px;
+    right: 18px;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+  }
+  .themes button {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .themes button:hover { background: rgba(255, 255, 255, 0.16); }
+  .themes button.active { border-color: #fff; background: rgba(255, 255, 255, 0.2); }
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js"
+  }
+}
+</script>
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+
+  <a href="#" onclick="document.querySelector('pre') && document.querySelector('pre').style.display === 'none' ? document.querySelector('pre').style.display = 'block' : null; return false;" style="
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  " onmouseover="this.style.color='rgba(255,255,255,0.8)'; this.style.borderColor='rgba(255,255,255,0.35)'"
+  onmouseout="this.style.color='rgba(255,255,255,0.4)'; this.style.borderColor='rgba(255,255,255,0.15)'">
+    Effect 08 / 10
+  </a>
+
+  <div style="
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    z-index: 100;
+    pointer-events: none;
+    user-select: none;
+  ">
+    <p style="
+      margin: 0 0 3px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    ">Three.js Hero Backgrounds Pack</p>
+    <p style="
+      margin: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.04em;
+    ">Constellation Network</p>
+  </div>
+<div class="themes">
+    <button data-theme="space"  class="active">Space</button>
+    <button data-theme="matrix">Matrix</button>
+    <button data-theme="cyber">Cyber</button>
+  </div>
+<script type="module">
+    import * as THREE from 'three';
+    // ??? Configuration ? edit these values to customise the effect ???????????????
+    const CONFIG = {
+  // Total node count
+  nodeCount: 120,
+  // Maximum distance between nodes to draw a connection line
+  connectionDistance: 3.5,
+  // Minimum node movement speed
+  minSpeed: 0.008,
+  // Maximum node movement speed
+  maxSpeed: 0.022,
+  // Node colours (randomly assigned from this array)
+  nodeColors: ['#ffffff', '#7eb8ff', '#a78bfa'],
+  // Line colour when nodes are far apart
+  lineFarColor: '#334477',
+  // Line colour when nodes are close
+  lineNearColor: '#7eb8ff',
+  // Maximum line opacity
+  lineOpacity: 0.45,
+  // Mouse attraction radius
+  mouseAttractionRadius: 2.5,
+  // Click burst force
+  burstForce: 0.08,
+};
+    const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i
+                    .test(navigator.userAgent) || window.innerWidth < 768;
+const THEMES = {
+  space: {
+    bg: 0x03050f,
+    palette: CONFIG.nodeColors.map((color) => ({ color: new THREE.Color(color).getHex(), weight: 1 / CONFIG.nodeColors.length })),
+    lineFar: new THREE.Color(CONFIG.lineFarColor).getHex(), lineClose: new THREE.Color(CONFIG.lineNearColor).getHex(),
+  },
+  matrix: {
+    bg: 0x000a00,
+    palette: [ { color: 0x00ff41, weight: 1.0 } ],
+    lineFar: 0x003300, lineClose: 0x00ff41,
+  },
+  cyber: {
+    bg: 0x000510,
+    palette: [
+      { color: 0x00ffff, weight: 0.5 },
+      { color: 0xff00ff, weight: 0.5 },
+    ],
+    lineFar: 0x004444, lineClose: 0x00ffff,
+  },
+};
+const THEME_TWEEN = 0.8;
+let currentTheme = 'space';
+
+function pickPaletteColor(theme) {
+  const r = Math.random();
+  let acc = 0;
+  for (const entry of theme.palette) {
+    acc += entry.weight;
+    if (r <= acc) return entry.color;
+  }
+  return theme.palette[theme.palette.length - 1].color;
+}
+
+    const canvas   = document.getElementById('bg-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: !IS_MOBILE });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, IS_MOBILE ? 1.5 : 2));
+renderer.setClearColor(THEMES.space.bg, 1);
+
+    const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 9);
+
+const sphereGeo = new THREE.SphereGeometry(0.045, 8, 8);
+
+const baseTotal = 120;
+const layerDefs = [
+  { name: 'near', frac: 40 / baseTotal, zMin: -1, zMax:  1, sizeMul: 1.15, speedMul: 1.25 },
+  { name: 'mid',  frac: 50 / baseTotal, zMin: -3, zMax: -1, sizeMul: 1.0,  speedMul: 1.0  },
+  { name: 'far',  frac: 30 / baseTotal, zMin: -6, zMax: -3, sizeMul: 0.75, speedMul: 0.7  },
+];
+
+const nodes = [];
+const tmpColor = new THREE.Color();
+
+function randomDirection() {
+
+  return new THREE.Vector3(
+    Math.random() * 2 - 1,
+    Math.random() * 2 - 1,
+    (Math.random() * 2 - 1) * 0.3
+  ).normalize();
+}
+
+let built = 0;
+for (const layer of layerDefs) {
+  const layerCount = Math.round(CONFIG.nodeCount * layer.frac);
+  for (let i = 0; i < layerCount && built < (IS_MOBILE ? Math.round(CONFIG.nodeCount * 0.5) : CONFIG.nodeCount); i++, built++) {
+    const colorHex = pickPaletteColor(THEMES[currentTheme]);
+    const mat = new THREE.MeshBasicMaterial({
+      color: colorHex, transparent: true, opacity: 1,
+    });
+    const mesh = new THREE.Mesh(sphereGeo, mat);
+
+    mesh.position.set(
+      Math.random() * 24 - 12,
+      Math.random() * 14 - 7,
+      layer.zMin + Math.random() * (layer.zMax - layer.zMin)
+    );
+
+    const speed = (CONFIG.minSpeed + Math.random() * (CONFIG.maxSpeed - CONFIG.minSpeed))
+                  * layer.speedMul;
+
+    mesh.userData = {
+      layer:           layer.name,
+      velocity:        randomDirection().multiplyScalar(speed),
+      baseSpeed:       speed,
+      originalOpacity: 0.5 + Math.random() * 0.5,
+      pulseOffset:     Math.random() * Math.PI * 2,
+      pulseSpeed:      0.8 + Math.random() * 1.2,
+      size:            (0.03 + Math.random() * 0.05) * layer.sizeMul,
+      isConnected:     false,
+
+      curColor:        new THREE.Color(colorHex),
+      fromColor:       new THREE.Color(colorHex),
+      toColor:         new THREE.Color(colorHex),
+    };
+
+    nodes.push(mesh);
+    scene.add(mesh);
+  }
+}
+
+let cursorNode = null;
+if (!IS_MOBILE) {
+  cursorNode = new THREE.Mesh(
+    sphereGeo,
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 })
+  );
+  cursorNode.scale.setScalar(0.12 / 0.045);
+  cursorNode.renderOrder = 5;
+  cursorNode.material.depthTest = false;
+  scene.add(cursorNode);
+}
+
+const linePool = [];
+for (let i = 0; i < 300; i++) {
+  const geo = new THREE.BufferGeometry();
+
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+  const mat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0 });
+  const line = new THREE.Line(geo, mat);
+  line.visible = false;
+  line.frustumCulled = false;
+  linePool.push(line);
+  scene.add(line);
+}
+
+const lineFarColor   = new THREE.Color(THEMES.space.lineFar);
+const lineCloseColor = new THREE.Color(THEMES.space.lineClose);
+const lineTmpColor   = new THREE.Color();
+
+const mouseNDC   = new THREE.Vector2(999, 999);
+const mouseWorld = new THREE.Vector3();
+let mouseInside  = false;
+let burstQueued  = false;
+
+function updateMouseWorld() {
+  const v = new THREE.Vector3(mouseNDC.x, mouseNDC.y, 0.5);
+  v.unproject(camera);
+  const dir = v.sub(camera.position).normalize();
+  const distance = -camera.position.z / dir.z;
+  mouseWorld.copy(camera.position).add(dir.multiplyScalar(distance));
+}
+
+window.addEventListener('pointermove', (e) => {
+  mouseNDC.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+  mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  mouseInside = true;
+});
+window.addEventListener('pointerleave', () => { mouseInside = false; });
+
+window.addEventListener('pointerdown', () => { if (mouseInside) burstQueued = true; });
+
+let themeTween = null;
+
+function setTheme(name) {
+  if (!THEMES[name] || name === currentTheme) return;
+  const from = THEMES[currentTheme];
+  const to   = THEMES[name];
+  currentTheme = name;
+
+  for (const node of nodes) {
+    node.userData.fromColor.copy(node.userData.curColor);
+    node.userData.toColor.set(pickPaletteColor(to));
+  }
+
+  themeTween = {
+    t: 0, dur: THEME_TWEEN,
+    fromBg: new THREE.Color(from.bg),     toBg: new THREE.Color(to.bg),
+    fromFar: new THREE.Color(from.lineFar),   toFar: new THREE.Color(to.lineFar),
+    fromClose: new THREE.Color(from.lineClose), toClose: new THREE.Color(to.lineClose),
+  };
+
+  document.querySelectorAll('.themes button').forEach(b =>
+    b.classList.toggle('active', b.dataset.theme === name));
+}
+
+document.querySelectorAll('.themes button').forEach(btn =>
+  btn.addEventListener('click', () => setTheme(btn.dataset.theme)));
+
+const clock = new THREE.Clock();
+let frameNo = 0;
+const bgColor = new THREE.Color(THEMES.space.bg);
+
+function animate() {
+  requestAnimationFrame(animate);
+  const time = clock.getElapsedTime();
+  frameNo++;
+
+  if (mouseInside) updateMouseWorld();
+
+  if (themeTween) {
+    themeTween.t += clock.getDelta ? Math.min(0.05, clock.getDelta()) : 0;
+    const k = Math.min(1, themeTween.t / themeTween.dur);
+    bgColor.copy(themeTween.fromBg).lerp(themeTween.toBg, k);
+    renderer.setClearColor(bgColor, 1);
+    lineFarColor.copy(themeTween.fromFar).lerp(themeTween.toFar, k);
+    lineCloseColor.copy(themeTween.fromClose).lerp(themeTween.toClose, k);
+    for (const node of nodes) {
+      node.userData.curColor.copy(node.userData.fromColor).lerp(node.userData.toColor, k);
+      node.material.color.copy(node.userData.curColor);
+    }
+    if (k >= 1) themeTween = null;
+  }
+
+  for (const node of nodes) {
+    const ud = node.userData;
+
+    if (burstQueued && mouseInside) {
+      const d = node.position.distanceTo(mouseWorld);
+      if (d < 3.5) {
+        const force = node.position.clone().sub(mouseWorld).normalize()
+                        .multiplyScalar(CONFIG.burstForce * (1 - d / 3.5));
+        ud.velocity.add(force);
+      }
+    }
+
+    if (mouseInside) {
+      const d = node.position.distanceTo(mouseWorld);
+      if (d < CONFIG.mouseAttractionRadius) {
+        const force = mouseWorld.clone().sub(node.position).normalize()
+                        .multiplyScalar(0.004 * (1 - d / CONFIG.mouseAttractionRadius));
+        ud.velocity.add(force);
+      }
+    }
+
+    ud.velocity.multiplyScalar(0.98);
+
+    const sp = ud.velocity.length();
+    if (sp < ud.baseSpeed * 0.6) {
+      ud.velocity.normalize().multiplyScalar(ud.baseSpeed * 0.6);
+    }
+
+    node.position.add(ud.velocity);
+
+    const p = node.position;
+    if (p.x >  13) p.x = -13;  else if (p.x < -13) p.x = 13;
+    if (p.y >   8) p.y =  -8;  else if (p.y <  -8) p.y =  8;
+    if (p.z >   2) p.z =  -7;  else if (p.z <  -7) p.z =  2;
+
+    if (frameNo % 120 === 0) {
+      const speed = ud.velocity.length();
+      ud.velocity.lerp(randomDirection().multiplyScalar(speed), 0.15);
+    }
+
+    const pulse = Math.sin(time * ud.pulseSpeed + ud.pulseOffset);
+    let scale   = ud.size * (1.0 + pulse * 0.25);
+    let opacity = ud.originalOpacity * (0.7 + pulse * 0.3);
+
+    if (p.z > -1)      {  }
+    else if (p.z > -3) { opacity *= 0.75; scale *= 0.85; }
+    else               { opacity *= 0.45; scale *= 0.65; }
+
+    node.scale.setScalar(scale / 0.045);
+    node.material.opacity = THREE.MathUtils.clamp(opacity, 0, 1);
+  }
+  burstQueued = false;
+
+  if (cursorNode) {
+    cursorNode.visible = mouseInside;
+    if (mouseInside) cursorNode.position.copy(mouseWorld);
+  }
+
+  if (!IS_MOBILE || frameNo % 2 === 0) {
+    rebuildConnections();
+  }
+
+  if (!IS_MOBILE) {
+    camera.position.x = Math.sin(time * 0.08) * 0.6;
+    camera.position.y = Math.cos(time * 0.06) * 0.35;
+  }
+  camera.lookAt(0, 0, 0);
+
+  renderer.render(scene, camera);
+}
+
+const maxDist = () => CONFIG.connectionDistance;
+
+function rebuildConnections() {
+  let poolIdx = 0;
+  const connDist = maxDist();
+
+  for (const node of nodes) node.userData.isConnected = false;
+  for (let i = 0; i < linePool.length; i++) linePool[i].visible = false;
+
+  for (let i = 0; i < nodes.length; i++) {
+    const a = nodes[i];
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = nodes[j];
+
+      if (Math.abs(a.position.z - b.position.z) > 1.5) continue;
+
+      const dist = a.position.distanceTo(b.position);
+      if (dist >= connDist) continue;
+
+      if (poolIdx >= linePool.length) break;
+      const t = dist / connDist;
+      drawPooledLine(poolIdx++, a.position, b.position, t, (1 - t) * CONFIG.lineOpacity);
+
+      a.userData.isConnected = true;
+      b.userData.isConnected = true;
+    }
+    if (poolIdx >= linePool.length) break;
+  }
+
+  if (cursorNode && cursorNode.visible) {
+    for (let i = 0; i < nodes.length && poolIdx < linePool.length; i++) {
+      const b = nodes[i];
+      const dist = cursorNode.position.distanceTo(b.position);
+      if (dist >= connDist) continue;
+      const t = dist / connDist;
+      drawPooledLine(poolIdx++, cursorNode.position, b.position, t,
+                     Math.min(1, (1 - t) * CONFIG.lineOpacity * 1.8));
+    }
+  }
+}
+
+function drawPooledLine(idx, p1, p2, t, opacity) {
+  const line = linePool[idx];
+  const arr  = line.geometry.attributes.position.array;
+  arr[0] = p1.x; arr[1] = p1.y; arr[2] = p1.z;
+  arr[3] = p2.x; arr[4] = p2.y; arr[5] = p2.z;
+  line.geometry.attributes.position.needsUpdate = true;
+
+  lineTmpColor.copy(lineFarColor).lerp(lineCloseColor, 1 - t);
+  line.material.color.copy(lineTmpColor);
+  line.material.opacity = opacity;
+  line.visible = true;
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Three.js Hero Backgrounds Pack — Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #03050f;
+      --sidebar-bg: #02040c;
+      --code-bg: #0a0d18;
+      --border: rgba(255,255,255,0.08);
+      --text: #ffffff;
+      --body: rgba(255,255,255,0.6);
+      --link: rgba(255,255,255,0.4);
+      --accent: #6366f1;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--body);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    code, pre {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 56px;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--sidebar-bg);
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .topbar-brand {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .menu-toggle {
+      background: transparent;
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 18px;
+      line-height: 1;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--sidebar-bg);
+      border-right: 0.5px solid var(--border);
+      padding: 28px 0;
+      z-index: 20;
+    }
+
+    .sidebar-header {
+      padding: 0 20px 24px;
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .sidebar-version {
+      font-size: 12px;
+      color: var(--link);
+      margin-top: 4px;
+    }
+
+    .sidebar-group {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      padding: 16px 20px 6px;
+    }
+
+    .sidebar a {
+      display: block;
+      font-size: 13px;
+      color: var(--link);
+      padding: 6px 16px;
+      border-left: 2px solid transparent;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .sidebar a:hover {
+      color: var(--text);
+    }
+
+    .sidebar a.active {
+      color: var(--text);
+      border-left-color: var(--accent);
+    }
+
+    .content {
+      margin-left: 220px;
+      padding: 40px 48px;
+      max-width: 760px;
+    }
+
+    section {
+      padding-top: 24px;
+      margin-bottom: 40px;
+    }
+
+    h1.page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--link);
+      margin-bottom: 32px;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      border-bottom: 0.5px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 24px 0 8px;
+    }
+
+    p {
+      margin-bottom: 14px;
+    }
+
+    ul {
+      margin: 0 0 14px 20px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    strong {
+      color: rgba(255,255,255,0.8);
+      font-weight: 600;
+    }
+
+    code.inline {
+      background: var(--code-bg);
+      border: 0.5px solid var(--border);
+      border-radius: 5px;
+      padding: 1px 6px;
+      font-size: 12px;
+      color: #e2e8f0;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    th {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .ok {
+      color: #4ade80;
+    }
+
+    .backdrop {
+      display: none;
+    }
+
+    @media (max-width: 860px) {
+      .topbar {
+        display: flex;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.22s ease;
+        padding-top: 28px;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .content {
+        margin-left: 0;
+        padding: 80px 24px 40px;
+      }
+
+      .backdrop.show {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 15;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="topbar-brand">Three.js Hero Pack</span>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
+  </div>
+
+  <div class="backdrop" id="backdrop"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Three.js Hero Backgrounds Pack</div>
+      <div class="sidebar-version">Documentation · v1.0</div>
+    </div>
+    <nav>
+      <div class="sidebar-group">Overview</div>
+      <a href="#getting-started">Getting Started</a>
+      <a href="#file-structure">File Structure</a>
+      <a href="#config-reference">CONFIG Reference</a>
+      <div class="sidebar-group">Effects</div>
+      <a href="#effect-01">Effect 01: Particle Field</a>
+      <a href="#effect-02">Effect 02: Infinite Tunnel</a>
+      <a href="#effect-03">Effect 03: Morphing Blob</a>
+      <a href="#effect-04">Effect 04: Galaxy Spiral</a>
+      <a href="#effect-05">Effect 05: Noise Terrain</a>
+      <a href="#effect-06">Effect 06: Shader Gradient</a>
+      <a href="#effect-07">Effect 07: Black Hole</a>
+      <a href="#effect-08">Effect 08: Constellation</a>
+      <a href="#effect-09">Effect 09: Particle Text</a>
+      <a href="#effect-10">Effect 10: Volumetric Smoke</a>
+      <div class="sidebar-group">Guides</div>
+      <a href="#react">React / Next.js Integration</a>
+      <a href="#browser-support">Browser Support</a>
+      <a href="#changelog">Changelog</a>
+      <a href="#support">Support</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <h1 class="page-title">Three.js Hero Backgrounds Pack</h1>
+    <p class="page-subtitle">10 self-contained Three.js WebGL hero background effects — Documentation v1.0</p>
+
+    <section id="getting-started">
+      <h2>Getting Started</h2>
+      <p>Open any <code class="inline">.html</code> file from the <code class="inline">/effects</code> folder directly in your browser. No installation, no build tools, no npm. The file loads Three.js from a CDN import map — an internet connection is required on first load, then the browser caches it.</p>
+      <pre>1. Open source/effects/01-particle-field.html in Chrome
+2. The effect runs immediately — full screen, mouse interactive
+3. Edit the CONFIG block at the top to customise it</pre>
+      <p>Every effect fills its container at <code class="inline">100%</code> width and height, so dropping it behind your own content is as simple as placing the canvas in a fixed, full-screen wrapper.</p>
+    </section>
+
+    <section id="file-structure">
+      <h2>File Structure</h2>
+      <pre>threejs-hero-backgrounds-pack/
+├── source/
+│   ├── effects/
+│   │   ├── 01-particle-field.html
+│   │   ├── 02-infinite-tunnel.html
+│   │   ├── 03-morphing-blob.html
+│   │   ├── 04-galaxy-spiral.html
+│   │   ├── 05-noise-terrain.html
+│   │   ├── 06-shader-gradient.html
+│   │   ├── 07-black-hole.html
+│   │   ├── 08-constellation-network.html
+│   │   ├── 09-particle-text.html
+│   │   └── 10-volumetric-smoke.html
+│   └── README.md
+├── documentation/
+│   └── index.html
+├── preview/
+├── changelog.txt
+├── licence.txt
+└── credits.txt</pre>
+    </section>
+
+    <section id="config-reference">
+      <h2>CONFIG Reference</h2>
+      <p>Every effect has a <code class="inline">CONFIG</code> object at the top of its script. Change values here only — never edit the animation code directly.</p>
+      <pre>const CONFIG = {
+  particleCount: 6000,      // Total number of floating particles
+  particleColor: '#7eb8f7',
+  spread: 6,
+  repulsionStrength: 0.05,
+  repulsionRadius: 1.8,
+  returnSpeed: 0.04,
+  rotationSpeed: 0.0003,
+  particleSize: 0.025,
+};</pre>
+      <p>All ten effects follow the same pattern: colours are hex strings, counts and sizes are numbers, and interaction values control how strongly the effect reacts to the cursor.</p>
+    </section>
+
+    <section id="effect-01">
+      <h2>Effect 01: Particle Field</h2>
+      <p>A drifting cloud of thousands of soft particles that gently part and flow around the cursor.</p>
+      <pre>const CONFIG = {
+  particleCount: 6000,      // Total number of floating particles
+  particleColor: '#7eb8f7', // Particle tint
+  spread: 6,                // How far particles fill the space
+  repulsionStrength: 0.05,  // Push force away from the cursor
+  repulsionRadius: 1.8,     // Cursor influence radius
+  returnSpeed: 0.04,        // How fast particles drift back
+  rotationSpeed: 0.0003,    // Slow ambient rotation of the field
+  particleSize: 0.025,      // Size of each particle
+};</pre>
+      <p><strong>Tip:</strong> for a subtler look, reduce <code class="inline">particleCount</code> to 3000 and lower <code class="inline">particleSize</code> to 0.018.</p>
+    </section>
+
+    <section id="effect-02">
+      <h2>Effect 02: Infinite Tunnel</h2>
+      <p>An endless ring tunnel that rushes toward the viewer, steering with the mouse.</p>
+      <pre>const CONFIG = {
+  tunnelSpeed: 0.6,         // Travel speed through the tunnel
+  ringCount: 60,            // Number of rings in view
+  ringSpacing: 2.5,         // Distance between rings
+  tunnelColor: '#5eead4',   // Ring colour
+  twist: 0.04,              // Spiral twist per ring
+  mouseSteer: 0.25,         // How much the cursor bends the path
+};</pre>
+      <p><strong>Tip:</strong> lower <code class="inline">tunnelSpeed</code> to 0.3 for a calm, ambient hero; raise <code class="inline">twist</code> for a more hypnotic spiral.</p>
+    </section>
+
+    <section id="effect-03">
+      <h2>Effect 03: Morphing Blob</h2>
+      <p>A single organic sphere that breathes and warps using layered noise.</p>
+      <pre>const CONFIG = {
+  blobColor: '#a78bfa',     // Surface colour
+  noiseScale: 1.4,          // Size of the surface ripples
+  morphSpeed: 0.5,          // How fast the shape evolves
+  detail: 128,              // Mesh resolution (higher = smoother)
+  mouseInfluence: 0.6,      // How much the cursor deforms it
+  wireframe: false,         // Toggle wireframe rendering
+};</pre>
+      <p><strong>Tip:</strong> set <code class="inline">wireframe: true</code> with a low <code class="inline">detail</code> of 32 for a retro low-poly look.</p>
+    </section>
+
+    <section id="effect-04">
+      <h2>Effect 04: Galaxy Spiral</h2>
+      <p>A rotating spiral galaxy of coloured stars fading from a bright core to cool edges.</p>
+      <pre>const CONFIG = {
+  starCount: 20000,         // Number of stars
+  arms: 4,                  // Spiral arm count
+  spin: 1.2,                // Tightness of the spiral
+  radius: 8,                // Galaxy radius
+  coreColor: '#ffd9a0',     // Inner star colour
+  edgeColor: '#4f6bff',     // Outer star colour
+  rotationSpeed: 0.0006,    // Overall spin speed
+};</pre>
+      <p><strong>Tip:</strong> increase <code class="inline">arms</code> to 6 and tighten <code class="inline">spin</code> to 1.6 for a denser, more dramatic galaxy.</p>
+    </section>
+
+    <section id="effect-05">
+      <h2>Effect 05: Noise Terrain</h2>
+      <p>An endlessly scrolling wireframe landscape generated from simplex noise.</p>
+      <pre>const CONFIG = {
+  gridSize: 120,            // Resolution of the terrain mesh
+  amplitude: 1.6,           // Peak height of the hills
+  noiseScale: 0.12,         // Frequency of the terrain detail
+  scrollSpeed: 0.015,       // Speed the landscape moves toward you
+  terrainColor: '#22d3ee',  // Line colour
+  wireframe: true,          // Wireframe or solid surface
+};</pre>
+      <p><strong>Tip:</strong> drop <code class="inline">amplitude</code> to 0.8 for rolling hills, or raise it to 3 for sharp mountain ridges.</p>
+    </section>
+
+    <section id="effect-06">
+      <h2>Effect 06: Shader Gradient</h2>
+      <p>A slow, flowing multi-colour gradient rendered entirely in a fragment shader.</p>
+      <pre>const CONFIG = {
+  colorA: '#6366f1',        // First gradient colour
+  colorB: '#ec4899',        // Second gradient colour
+  colorC: '#0ea5e9',        // Third gradient colour
+  speed: 0.15,              // Flow speed
+  scale: 1.8,               // Size of the colour bands
+  grain: 0.04,              // Subtle film grain amount
+};</pre>
+      <p><strong>Tip:</strong> keep <code class="inline">speed</code> below 0.2 for an elegant, premium feel; a touch of <code class="inline">grain</code> hides colour banding on large screens.</p>
+    </section>
+
+    <section id="effect-07">
+      <h2>Effect 07: Black Hole</h2>
+      <p>A swirling accretion disk bending around a dark core with a soft gravitational glow.</p>
+      <pre>const CONFIG = {
+  diskColor: '#ff8a3d',     // Accretion disk colour
+  diskRadius: 5,            // Outer radius of the disk
+  particleCount: 12000,     // Particles forming the disk
+  swirlSpeed: 0.4,          // Orbital speed
+  distortion: 0.7,          // Strength of the lensing warp
+  accretionGlow: 0.8,       // Brightness of the inner glow
+};</pre>
+      <p><strong>Tip:</strong> raise <code class="inline">distortion</code> toward 1.0 for a more intense lensing effect, but lower <code class="inline">particleCount</code> on mobile to keep it smooth.</p>
+    </section>
+
+    <section id="effect-08">
+      <h2>Effect 08: Constellation</h2>
+      <p>A network of points linked by thin lines that connect and break as they drift, reacting to the cursor.</p>
+      <pre>const CONFIG = {
+  nodeCount: 140,           // Number of points
+  linkDistance: 1.4,        // Max distance to draw a connecting line
+  nodeColor: '#ffffff',     // Point colour
+  lineColor: '#6366f1',     // Connecting line colour
+  speed: 0.3,               // Drift speed of the points
+  mouseRadius: 2.2,         // Cursor attraction radius
+};</pre>
+      <p><strong>Tip:</strong> for a sparse, minimal feel reduce <code class="inline">nodeCount</code> to 80 and shorten <code class="inline">linkDistance</code> to 1.0.</p>
+    </section>
+
+    <section id="effect-09">
+      <h2>Effect 09: Particle Text</h2>
+      <p>Text rendered as particles that scatter on hover and reassemble into the words.</p>
+      <pre>const CONFIG = {
+  text: 'HELLO',            // The word to render
+  fontSize: 220,            // Source font size (sampling density)
+  particleGap: 4,           // Spacing between sampled particles
+  particleColor: '#7eb8f7', // Particle colour
+  scatterStrength: 1.5,     // How far particles fly on interaction
+  returnSpeed: 0.06,        // How quickly they reform
+};</pre>
+      <p><strong>Tip:</strong> shorter words stay crisp — keep <code class="inline">text</code> under 8 characters, and lower <code class="inline">particleGap</code> for denser, sharper letters.</p>
+    </section>
+
+    <section id="effect-10">
+      <h2>Effect 10: Volumetric Smoke</h2>
+      <p>Soft, lit smoke that rises and curls with turbulent motion.</p>
+      <pre>const CONFIG = {
+  smokeColor: '#9ca3af',    // Base smoke colour
+  density: 0.6,             // How thick the smoke appears
+  riseSpeed: 0.25,          // Upward drift speed
+  turbulence: 0.5,          // Amount of swirling motion
+  opacity: 0.45,            // Overall transparency
+  lightColor: '#c7d2fe',    // Tint of the light catching the smoke
+};</pre>
+      <p><strong>Tip:</strong> for a subtler look, reduce <code class="inline">density</code> to 0.4 and lower <code class="inline">opacity</code> to 0.3.</p>
+    </section>
+
+    <section id="react">
+      <h2>React / Next.js Integration</h2>
+      <p>Each effect is plain Three.js, so it drops into a component with a single <code class="inline">useEffect()</code> hook. Mount the renderer to a ref and dispose of it on unmount to avoid leaks.</p>
+      <pre>import { useEffect, useRef } from 'react';
+
+export default function ParticleBackground() {
+  const mountRef = useRef(null);
+
+  useEffect(() => {
+    // Paste your Three.js setup code here
+    // Replace document.body.appendChild(renderer.domElement)
+    // with mountRef.current.appendChild(renderer.domElement)
+    const CONFIG = { /* your config here */ };
+
+    // ... Three.js scene, camera, renderer setup ...
+
+    return () => {
+      // Cleanup on unmount
+      renderer.dispose();
+      mountRef.current?.removeChild(renderer.domElement);
+    };
+  }, []);
+
+  return (
+    &lt;div
+      ref={mountRef}
+      style={{ position: 'fixed', top: 0, left: 0, zIndex: -1 }}
+    /&gt;
+  );
+}</pre>
+      <p>In Next.js, render the component with <code class="inline">{ ssr: false }</code> via <code class="inline">next/dynamic</code> so Three.js only runs in the browser.</p>
+    </section>
+
+    <section id="browser-support">
+      <h2>Browser Support</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Browser</th>
+            <th>Minimum Version</th>
+            <th>Supported</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Chrome</td><td>90+</td><td class="ok">✓</td></tr>
+          <tr><td>Firefox</td><td>88+</td><td class="ok">✓</td></tr>
+          <tr><td>Safari</td><td>15+</td><td class="ok">✓</td></tr>
+          <tr><td>Edge</td><td>90+</td><td class="ok">✓</td></tr>
+        </tbody>
+      </table>
+      <p>WebGL must be enabled, which is the default in all modern browsers.</p>
+    </section>
+
+    <section id="changelog">
+      <h2>Changelog</h2>
+      <h3>Version 1.0 — Initial Release</h3>
+      <ul>
+        <li>10 Three.js hero background effects</li>
+        <li>CONFIG customisation system</li>
+        <li>Mobile performance fallbacks</li>
+        <li>Vanilla JS, no dependencies</li>
+      </ul>
+    </section>
+
+    <section id="support">
+      <h2>Support</h2>
+      <p>For support, open a ticket via your CodeCanyon downloads page. Include your browser version and a description of the issue. Response within 48 hours.</p>
+    </section>
+  </main>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('backdrop');
+    const toggle = document.getElementById('menuToggle');
+    const links = document.querySelectorAll('.sidebar a');
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('show');
+    }
+
+    toggle.addEventListener('click', function () {
+      sidebar.classList.toggle('open');
+      backdrop.classList.toggle('show');
+    });
+
+    backdrop.addEventListener('click', closeSidebar);
+    links.forEach(function (link) {
+      link.addEventListener('click', closeSidebar);
+    });
+
+    const sections = document.querySelectorAll('section');
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          links.forEach(function (link) {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+
+    sections.forEach(function (section) {
+      observer.observe(section);
+    });
+  </script>
+</body>
+</html>
