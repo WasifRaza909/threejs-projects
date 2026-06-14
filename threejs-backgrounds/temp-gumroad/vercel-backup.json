@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/index-codecanyon.html" },
+    { "source": "/gumroad", "destination": "/index-gumroad.html" }
+  ]
+}

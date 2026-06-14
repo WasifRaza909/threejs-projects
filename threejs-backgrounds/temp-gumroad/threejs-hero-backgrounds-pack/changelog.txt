@@ -1,0 +1,10 @@
+Three.js Hero Backgrounds Pack — Changelog
+
+Version 1.0 — June 2026
+
+  - Initial release
+  - 10 self-contained Three.js WebGL hero background effects
+  - CONFIG customisation system for all effects
+  - Mouse interaction on all effects
+  - Mobile performance fallbacks
+  - Browser support: Chrome 90+, Firefox 88+, Safari 15+, Edge 90+
