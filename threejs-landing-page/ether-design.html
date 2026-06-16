@@ -17,6 +17,7 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
+    --bg-deep: #0A0A0F;
     --base: #050507f3;
     --surface: #0e0e13e6;
     --surface-100: #0e0e13;
@@ -24,15 +25,62 @@
     --violet: #6D28D9;
     --violet-mid: #8B5CF6;
     --violet-light: #C4B5FD;
+    --violet-vivid: #7C3AED;
     --white: #F8FAFC;
+    --pure-white: #ffffff;
     --muted: #6B7280;
     --muted-light: #9CA3AF;
-    --border: rgba(139,92,246,0.18);
-    --border-subtle: rgba(255,255,255,0.06);
+    --accent-cyan: #00ffff;
+    --star-gold: #FCD34D;
+    
+    /* Alpha variants for glows and borders */
+    --violet-alpha-05: rgba(139, 92, 246, 0.05);
+    --violet-alpha-10: rgba(139, 92, 246, 0.1);
+    --violet-light-alpha-06: rgba(196, 181, 253, 0.06);
+    --violet-alpha-20: rgba(139, 92, 246, 0.2);
+    --violet-alpha-30: rgba(139, 92, 246, 0.3);
+    --violet-alpha-50: rgba(139, 92, 246, 0.5);
+    --violet-vivid-alpha-15: rgba(109, 40, 217, 0.15);
+    --violet-vivid-alpha-20: rgba(109, 40, 217, 0.22);
+    --violet-vivid-alpha-30: rgba(109, 40, 217, 0.3);
+    --violet-vivid-alpha-40: rgba(109, 40, 217, 0.4);
+    
+    --white-alpha-55: rgba(255, 255, 255, 0.55);
+    --cyan-alpha-08: rgba(6, 182, 212, 0.08);
+    --violet-vivid-alpha-12: rgba(109, 40, 217, 0.12);
+    --violet-vivid-alpha-14: rgba(109, 40, 217, 0.14);
+    --violet-alpha-25: rgba(139, 92, 246, 0.25);
+    --bg-features-end: #050b14;
+    --bg-howitworks-end: #0e0514;
+    --bg-metrics-end: #051414;
+    --bg-testimonials-end: #080c18;
+    --bg-pricing-end: #0d0514;
+    --bg-footer-end: #08050e;
+
+    --white-alpha-03: rgba(255, 255, 255, 0.03);
+    --accent-cyan-alpha-20: rgba(0, 255, 255, 0.2);
+    --accent-cyan-alpha-50: rgba(0, 255, 255, 0.5);
+    --violet-light-alpha-08: rgba(196, 181, 253, 0.08);
+    
+    --accent-pink-alpha-06: rgba(236, 72, 153, 0.06);
+    --accent-teal-alpha-10: rgba(20, 184, 166, 0.1);
+    --accent-indigo-alpha-08: rgba(99, 102, 241, 0.08);
+    --widget-bg: rgba(14, 14, 19, 0.6);
+    --violet-alpha-80: rgba(139, 92, 246, 0.8);
+    --white-alpha-80: rgba(255, 255, 255, 0.8);
+    
+    --violet-vivid-alpha-08: rgba(109, 40, 217, 0.08);
+    --white-alpha-06: rgba(255, 255, 255, 0.06);
+    
+    --border: rgba(139, 92, 246, 0.18);
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --white-alpha-05: rgba(255, 255, 255, 0.05);
+    --white-alpha-10: rgba(255, 255, 255, 0.1);
+    --black-alpha-30: rgba(0, 0, 0, 0.3);
+    --black-alpha-40: rgba(0, 0, 0, 0.4);
   }
 
   html { 
-    scroll-behavior: smooth;
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
@@ -59,7 +107,7 @@
   }
 
   body {
-    background: #0A0A0F;
+    background: var(--bg-deep);
     font-family: 'Manrope', sans-serif;
     color: var(--white);
   }
@@ -76,7 +124,7 @@
   /* ── DIVIDER ── */
   .section-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(139,92,246,0.3), transparent);
+    background: linear-gradient(90deg, transparent, var(--violet-alpha-30), transparent);
   }
 
   /* ══════════════════════════════
@@ -89,14 +137,18 @@
     padding: 0 64px;
     height: 72px;
     border-bottom: 1px solid var(--border-subtle);
-    position: relative;
-    background: rgba(5,5,7,0.97);
+    position: sticky;
+    top: 0;
+    z-index: 1001;
+    background: var(--base);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
   .nav::after {
     content: '';
     position: absolute;
     bottom: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(139,92,246,0.5), transparent);
+    background: linear-gradient(90deg, transparent, var(--violet-alpha-50), transparent);
   }
   .nav-logo {
     font-family: 'Syne', sans-serif;
@@ -111,6 +163,10 @@
     display: flex;
     gap: 40px;
     list-style: none;
+    height: 100%;
+  }
+  .nav-links li {
+    height: 100%;
   }
   .nav-links li a {
     font-size: 13.5px;
@@ -118,37 +174,198 @@
     color: var(--muted-light);
     text-decoration: none;
     letter-spacing: 0.02em;
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s ease;
   }
-  .nav-cta { display: flex; align-items: center; gap: 16px; }
-  .btn-ghost {
-    font-family: 'Manrope', sans-serif;
-    font-size: 13px; font-weight: 600;
-    color: var(--muted-light);
-    background: none; border: none; cursor: pointer;
+  .nav-links li a::after {
+    content: '';
+    position: absolute;
+    bottom: -1.5px;
+    left: 0;
+    width: 100%;
+    border-radius: 200px;
+    height: 3px;
+    background: var(--violet-mid);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.3s ease;
+    box-shadow: 0 0 12px var(--violet-mid);
   }
-  .btn-primary {
-    font-family: 'Manrope', sans-serif;
-    font-size: 13px; font-weight: 600;
+  .nav-links li a:hover,
+  .nav-links li a.active {
     color: var(--white);
-    background: var(--violet);
-    border: none; padding: 10px 22px;
-    border-radius: 6px; cursor: pointer;
-    white-space: nowrap;
   }
+  .nav-links li a:hover::after,
+  .nav-links li a.active::after {
+    transform: scaleX(1);
+  }
+  /* ══════════════════════════════
+     BUTTON SYSTEM
+  ══════════════════════════════ */
+  .btn {
+    position: relative; z-index: 1; overflow: hidden;
+    font-family: 'Manrope', sans-serif; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px; white-space: nowrap; cursor: pointer;
+    transition: all 0.3s ease; border-radius: 8px; border: none;
+    text-decoration: none; font-size: 14px;
+  }
+  
+  /* Primary / Solid Theme */
+  .btn-primary { background: var(--pure-white); color: var(--pure-white); }
+  .btn-primary::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--violet-vivid), var(--violet));
+    z-index: -1; transition: opacity 0.3s ease;
+  }
+  .btn-primary:hover::before { opacity: 0; }
+  .btn-primary:hover { color: var(--violet); }
+
+  /* Outline Theme */
+  .btn-outline { background: transparent; border: 2px solid var(--white); color: var(--pure-white); }
+  .btn-outline::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--violet-vivid), var(--violet));
+    z-index: -1; opacity: 0; transition: opacity 0.3s ease;
+  }
+  .btn-outline:hover::before { opacity: 1; }
+  .btn-outline:hover { border-color: var(--violet); color: var(--pure-white); box-shadow: 0 0 32px var(--violet-vivid-alpha-40); }
+
+  /* Ghost Theme */
+  .btn-ghost { background: none; border: none; color: var(--muted-light); }
+  .btn-ghost:hover { color: var(--white); }
+
+  /* Sizing / Layout Modifiers */
+  .btn-sm { padding: 10px 22px; font-size: 13px; border-radius: 6px; }
+  .btn-md { padding: 12px 30px; font-weight: 700; }
+  .btn-lg { padding: 14px 32px; font-weight: 700; }
+  .btn-full { width: 100%; }
+
+  .play-icon {
+    width: 14px; height: 14px;
+    border: 1.5px solid var(--pure-white); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all 0.3s ease;
+  }
+  .btn-outline:hover .play-icon { border-color: var(--pure-white); }
+  .play-icon::after {
+    content: ''; width: 0; height: 0;
+    border-left: 5px solid var(--pure-white);
+    border-top: 3px solid transparent;
+    border-bottom: 3px solid transparent;
+    margin-left: 1px;
+    transition: all 0.3s ease;
+  }
+  .btn-outline:hover .play-icon::after { border-left-color: var(--pure-white); }
+
+  .nav-cta { display: flex; align-items: center; gap: 16px; }
+  /* ══════════════════════════════
+     UNIQUE CRYSTALLINE DRAWER
+  ══════════════════════════════ */
+  .nav-drawer {
+    position: fixed; inset: 0; z-index: 2000;
+    visibility: hidden; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(5, 5, 7, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%); /* Start as center point */
+  }
+  .drawer-bg-shapes {
+    position: absolute; inset: 0; overflow: hidden; z-index: -1;
+  }
+  .bg-shape {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4;
+  }
+  .shape-1 { width: 300px; height: 300px; background: var(--violet); top: -100px; right: -50px; }
+  .shape-2 { width: 250px; height: 250px; background: var(--accent-cyan); bottom: 10%; left: -50px; }
+  .shape-3 { width: 400px; height: 400px; background: var(--violet-vivid); top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.15; }
+
+  .drawer-inner {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 40px;
+    position: relative;
+  }
+  .drawer-header-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 32px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 20;
+  }
+  .drawer-list {
+    list-style: none; display: flex; flex-direction: column; gap: 24px; align-items: center;
+  }
+  .drawer-item { overflow: hidden; }
+  .drawer-link {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: clamp(38px, 10vw, 56px); color: var(--white);
+    text-decoration: none; position: relative; display: block;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    letter-spacing: -0.04em; line-height: 1.1;
+    opacity: 0.6;
+  }
+  .drawer-link::before {
+    content: attr(data-text);
+    position: absolute; top: 0; left: 0; width: 0%; height: 100%;
+    color: var(--white); overflow: hidden; white-space: nowrap;
+    transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    -webkit-text-stroke: 1.5px var(--violet-mid);
+  }
+  .drawer-link.active {
+    opacity: 1; transform: scale(1.1);
+  }
+  .drawer-link.active::before { width: 100%; }
+
+  /* Inside Close Button */
+  .drawer-close-inside {
+    width: 48px; height: 48px; background: var(--white-alpha-05);
+    border-radius: 50%; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; position: relative;
+    transition: all 0.3s ease;
+  }
+  .drawer-close-inside:hover { background: var(--white-alpha-10); transform: rotate(90deg); }
+  .drawer-close-inside span {
+    position: absolute; width: 22px; height: 2px; background: var(--white); border-radius: 2px;
+  }
+  .drawer-close-inside span:nth-child(1) { transform: rotate(45deg); }
+  .drawer-close-inside span:nth-child(2) { transform: rotate(-45deg); }
+  
+  .drawer-bottom-cta {
+    position: absolute; bottom: 60px; width: calc(100% - 80px); max-width: 400px;
+    opacity: 0; transform: translateY(30px);
+  }
+
+  /* Hamburger Styling */
   .nav-hamburger {
-    display: none;
-    flex-direction: column;
-    gap: 5px;
-    cursor: pointer;
-    padding: 4px;
+    display: none; width: 44px; height: 44px;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; cursor: pointer; background: var(--white-alpha-05);
+    border-radius: 50%; transition: all 0.3s ease;
   }
-  .nav-hamburger span {
-    display: block; width: 22px; height: 2px;
-    background: var(--muted-light); border-radius: 2px;
+  .ham-line {
+    width: 20px; height: 2px; background: var(--white);
+    border-radius: 2px; transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  @media (max-width: 768px) {
+    .nav-hamburger { display: flex; }
+    .nav-links, .nav-signin-btn { display: none; }
+    .nav-cta .nav-main-cta {
+      display: none;
+    }
   }
 
   /* ══════════════════════════════
-     HERO
+     TABLET — 1024px
   ══════════════════════════════ */
   .hero {
     position: relative;
@@ -167,15 +384,15 @@
     content: '';
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(109,40,217,0.15) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 40% at 20% 60%, rgba(139,92,246,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 30% 30% at 80% 30%, rgba(196,181,253,0.06) 0%, transparent 50%);
+      radial-gradient(ellipse 80% 60% at 50% 40%, var(--violet-vivid-alpha-15) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 60%, var(--violet-alpha-10) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 30% at 80% 30%, var(--violet-light-alpha-06) 0%, transparent 50%);
   }
   .hero-badge {
     display: inline-flex;
     align-items: center; gap: 8px;
-    background: rgba(109,40,217,0.12);
-    border: 1px solid rgba(139,92,246,0.3);
+    background: var(--violet-vivid-alpha-12);
+    border: 1px solid var(--violet-alpha-30);
     border-radius: 100px;
     padding: 6px 14px 6px 10px;
     position: relative; z-index: 2;
@@ -223,7 +440,7 @@
     display: inline-block;
     transform: translateY(105%);
     transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
-    background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.55) 100%);
+    background: linear-gradient(180deg, var(--pure-white) 0%, var(--white-alpha-55) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -253,43 +470,6 @@
     position: relative; z-index: 2; margin-bottom: 80px;
     flex-wrap: wrap; justify-content: center;
   }
-  .btn-large-primary {
-    font-family: 'Manrope', sans-serif;
-    font-size: 14px; font-weight: 700; color: #fff;
-    background: linear-gradient(135deg, #7C3AED, #6D28D9);
-    border: 2px solid transparent; /* Prepare border space */
-    padding: 12px 30px; /* Adjusted padding to account for border */
-    border-radius: 8px; cursor: pointer;
-    box-shadow: 0 0 32px rgba(109,40,217,0.4), 0 4px 16px rgba(0,0,0,0.4);
-    white-space: nowrap;
-    transition: all 0.3s ease;
-  }
-  .btn-large-primary:hover {
-    background: #fff;
-    border-color: #6D28D9; /* Using the purple from the gradient */
-    color: #6D28D9;
-    box-shadow: none;
-  }
-  .btn-large-outline {
-    font-family: 'Manrope', sans-serif;
-    font-size: 14px; font-weight: 600; color: var(--muted-light);
-    background: none; border: 1px solid var(--border-subtle);
-    padding: 14px 32px; border-radius: 8px; cursor: pointer;
-    display: flex; align-items: center; gap: 8px; white-space: nowrap;
-  }
-  .play-icon {
-    width: 14px; height: 14px;
-    border: 1.5px solid var(--muted); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .play-icon::after {
-    content: '';
-    width: 0; height: 0;
-    border-left: 5px solid var(--muted);
-    border-top: 3px solid transparent;
-    border-bottom: 3px solid transparent;
-    margin-left: 1px;
-  }
   .hero-stats {
     display: flex; gap: 48px;
     position: relative; z-index: 2;
@@ -299,7 +479,7 @@
     justify-content: center; flex-wrap: wrap;
   }
   .hero-stat { text-align: center; }
-  .hero-stat-sep { width: 1px; background: rgba(255,255,255,0.06); }
+  .hero-stat-sep { width: 1px; background: var(--border-subtle); }
   .hero-stat-num {
     font-family: 'Syne', sans-serif;
     font-weight: 700; font-size: 28px;
@@ -316,13 +496,13 @@
   ══════════════════════════════ */
   .features { 
     padding: 112px 64px; 
-    background: linear-gradient(180deg, var(--base) 0%, #050b14 100%); 
+    background: linear-gradient(180deg, var(--base) 0%, var(--bg-features-end) 100%); 
     position: relative;
     overflow: hidden;
   }
   .features::before {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 50%);
+    background: radial-gradient(circle at 80% 20%, var(--cyan-alpha-08) 0%, transparent 50%);
     pointer-events: none;
   }
   .section-eyebrow {
@@ -359,12 +539,12 @@
     padding: 36px 32px; position: relative;
   }
   .feat-card.highlighted {
-    background: linear-gradient(135deg, rgba(109,40,217,0.14), rgba(109,40,217,0.04));
+    background: linear-gradient(135deg, var(--violet-vivid-alpha-14), var(--violet-alpha-05));
   }
   .feat-icon {
     width: 40px; height: 40px;
-    background: rgba(109,40,217,0.15);
-    border: 1px solid rgba(139,92,246,0.25);
+    background: var(--violet-vivid-alpha-15);
+    border: 1px solid var(--violet-alpha-25);
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
     margin-bottom: 20px; font-size: 18px;
@@ -384,7 +564,7 @@
   ══════════════════════════════ */
   .howitworks {
     padding: 0;
-    background: linear-gradient(180deg, var(--base) 0%, #0e0514 100%);
+    background: linear-gradient(180deg, var(--base) 0%, var(--bg-howitworks-end) 100%);
     position: relative;
     overflow: hidden;
     height: 100vh;
@@ -393,13 +573,13 @@
   }
   .howitworks::after {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.06) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 80%, var(--accent-pink-alpha-06) 0%, transparent 50%);
     pointer-events: none;
     z-index: 1;
   }
   .howitworks::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(139,92,246,0.3), transparent);
+    background: linear-gradient(90deg, transparent, var(--violet-alpha-30), transparent);
   }
   
   .hiw-header {
@@ -424,7 +604,7 @@
     display: flex;
     align-items: center;
     gap: 80px;
-    width: 70vw;
+    width: 90vw;
     padding-right: 60px;
     flex-shrink: 0;
     position: relative;
@@ -439,8 +619,8 @@
     font-weight: 800;
     font-size: 320px;
     line-height: 1;
-    color: rgba(139, 92, 246, 0.03);
-    -webkit-text-stroke: 1px rgba(139, 92, 246, 0.08);
+    color: var(--violet-alpha-05);
+    -webkit-text-stroke: 1px var(--violet-alpha-10);
     pointer-events: none;
     z-index: -1;
   }
@@ -488,8 +668,8 @@
     font-size: 11px; font-weight: 600;
     letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--violet-light); 
-    background: rgba(139,92,246,0.1);
-    border: 1px solid rgba(139,92,246,0.2);
+    background: var(--violet-alpha-10);
+    border: 1px solid var(--violet-alpha-20);
     padding: 6px 14px; border-radius: 100px;
   }
 
@@ -499,14 +679,14 @@
   }
 
   .step-widget {
-    background: rgba(14, 14, 19, 0.6);
+    background: var(--widget-bg);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border-subtle);
     border-radius: 16px; 
     padding: 32px;
     box-shadow: 
-      0 20px 40px rgba(0,0,0,0.3),
-      inset 0 0 20px rgba(139,92,246,0.05);
+      0 20px 40px var(--black-alpha-30),
+      inset 0 0 20px var(--violet-alpha-05);
     position: relative;
     overflow: hidden;
   }
@@ -522,7 +702,7 @@
     justify-content: space-between;
     margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid var(--white-alpha-05);
   }
   
   .widget-dot {
@@ -532,12 +712,12 @@
   }
   .step-widget-code {
     font-family: 'Manrope', monospace;
-    font-size: 12px; color: rgba(139,92,246,0.8); line-height: 1.8;
+    font-size: 12px; color: var(--violet-alpha-80); line-height: 1.8;
   }
   .step-widget-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 8px 12px; background: rgba(255,255,255,0.03);
-    border-radius: 6px; font-size: 12px; color: #9CA3AF; margin-bottom: 8px;
+    padding: 8px 12px; background: var(--white-alpha-03);
+    border-radius: 6px; font-size: 12px; color: var(--muted-light); margin-bottom: 8px;
   }
   .step-widget-row:last-child { margin-bottom: 0; }
 
@@ -546,12 +726,12 @@
   ══════════════════════════════ */
   .metrics {
     padding: 96px 64px; 
-    background: linear-gradient(180deg, var(--base) 0%, #051414 100%);
+    background: linear-gradient(180deg, var(--base) 0%, var(--bg-metrics-end) 100%);
     position: relative; overflow: hidden;
   }
   .metrics::before {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse 70% 100% at 50% 50%, rgba(20, 184, 166, 0.1) 0%, transparent 70%);
+    background: radial-gradient(ellipse 70% 100% at 50% 50%, var(--accent-teal-alpha-10) 0%, transparent 70%);
     pointer-events: none;
   }
   .metrics-grid {
@@ -566,7 +746,7 @@
   .metric-num {
     font-family: 'Syne', sans-serif; font-weight: 800; font-size: 52px;
     letter-spacing: -0.04em; line-height: 1;
-    background: linear-gradient(135deg, #fff 30%, var(--violet-light));
+    background: linear-gradient(135deg, var(--pure-white) 30%, var(--violet-light));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text; margin-bottom: 10px;
   }
@@ -580,18 +760,18 @@
   ══════════════════════════════ */
   .testimonials {
     padding: 112px 64px; 
-    background: linear-gradient(180deg, var(--surface) 0%, #080c18 100%);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--bg-testimonials-end) 100%);
     position: relative;
     overflow: hidden;
   }
   .testimonials::after {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 10% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
+    background: radial-gradient(circle at 10% 30%, var(--accent-indigo-alpha-08) 0%, transparent 40%);
     pointer-events: none;
   }
   .testimonials::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(139,92,246,0.3), transparent);
+    background: linear-gradient(90deg, transparent, var(--violet-alpha-30), transparent);
   }
   .testi-header {
     display: grid; grid-template-columns: 1fr 1fr;
@@ -606,12 +786,12 @@
     border-radius: 12px; padding: 36px 32px; position: relative;
   }
   .testi-card.featured {
-    border-color: rgba(139,92,246,0.3);
-    background: linear-gradient(135deg, rgba(109,40,217,0.08), var(--base));
+    border-color: var(--violet-alpha-30);
+    background: linear-gradient(135deg, var(--violet-vivid-alpha-08), var(--base));
   }
   .testi-quote-mark {
     font-family: 'Syne', sans-serif; font-size: 48px;
-    color: rgba(139,92,246,0.25); line-height: 1; margin-bottom: 16px;
+    color: var(--violet-alpha-25); line-height: 1; margin-bottom: 16px;
   }
   .testi-text {
     font-size: 15px; color: var(--muted-light);
@@ -621,16 +801,16 @@
   .testi-avatar {
     width: 38px; height: 38px; border-radius: 50%;
     background: linear-gradient(135deg, var(--violet), var(--violet-mid));
-    border: 2px solid rgba(139,92,246,0.3);
+    border: 2px solid var(--violet-alpha-30);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
-    color: white; flex-shrink: 0;
+    color: var(--pure-white); flex-shrink: 0;
   }
   .testi-name { font-weight: 700; font-size: 14px; color: var(--white); }
   .testi-role { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .testi-stars {
     position: absolute; top: 32px; right: 32px;
-    color: #FCD34D; font-size: 12px; letter-spacing: 2px;
+    color: var(--star-gold); font-size: 12px; letter-spacing: 2px;
   }
 
   /* ══════════════════════════════
@@ -638,13 +818,13 @@
   ══════════════════════════════ */
   .pricing { 
     padding: 112px 64px; 
-    background: linear-gradient(180deg, var(--base) 0%, #0d0514 100%);
+    background: linear-gradient(180deg, var(--base) 0%, var(--bg-pricing-end) 100%);
     position: relative;
     overflow: hidden;
   }
   .pricing::before {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 90% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 45%);
+    background: radial-gradient(circle at 90% 70%, var(--violet-alpha-08) 0%, transparent 45%);
     pointer-events: none;
   }
   .pricing-header { text-align: center; }
@@ -658,13 +838,13 @@
     border-radius: 16px; padding: 40px 36px; position: relative;
   }
   .price-card.popular {
-    border-color: rgba(139,92,246,0.5);
-    background: linear-gradient(170deg, rgba(109,40,217,0.12), var(--surface));
-    box-shadow: 0 0 60px rgba(109,40,217,0.15);
+    border-color: var(--violet-alpha-50);
+    background: linear-gradient(170deg, var(--violet-vivid-alpha-12), var(--surface));
+    box-shadow: 0 0 60px var(--violet-vivid-alpha-15);
   }
   .popular-badge {
     position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-    background: var(--violet); color: white;
+    background: var(--violet); color: var(--pure-white);
     font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
     text-transform: uppercase; padding: 4px 14px; border-radius: 100px;
     white-space: nowrap;
@@ -694,35 +874,24 @@
   }
   .price-features li.disabled { color: var(--muted); opacity: 0.5; }
   .price-features li.disabled::before { content: '–'; color: var(--muted); }
-  .btn-price-primary {
-    width: 100%; padding: 13px; background: var(--violet); color: white;
-    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 14px;
-    border: none; border-radius: 8px; cursor: pointer;
-  }
-  .btn-price-outline {
-    width: 100%; padding: 13px; background: none; color: var(--muted-light);
-    font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 14px;
-    border: 1px solid var(--border-subtle); border-radius: 8px; cursor: pointer;
-  }
-
   /* ══════════════════════════════
      FOOTER
   ══════════════════════════════ */
   .footer {
     padding: 64px 64px 48px; 
-    background: linear-gradient(180deg, var(--surface-100) 0%, #08050e 100%);
+    background: linear-gradient(180deg, var(--surface-100) 0%, var(--bg-footer-end) 100%);
     border-top: 1px solid var(--border-subtle); 
     position: relative;
     overflow: hidden;
   }
   .footer::after {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 50% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
+    background: radial-gradient(circle at 50% 100%, var(--violet-alpha-05) 0%, transparent 60%);
     pointer-events: none;
   }
   .footer::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(139,92,246,0.3), transparent);
+    background: linear-gradient(90deg, transparent, var(--violet-alpha-30), transparent);
   }
   .footer-top {
     display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr;
@@ -796,7 +965,7 @@
     .hero-headline { margin-bottom: 20px; }
     .hero-desc { font-size: 15px; margin-bottom: 36px; }
     .hero-actions { gap: 12px; margin-bottom: 56px; flex-direction: column; width: 100%; }
-    .btn-large-primary, .btn-large-outline { width: 100%; justify-content: center; }
+    .btn-lg { width: 100%; }
     .hero-stats { gap: 24px; }
     .hero-stat-sep { display: none; }
     .hero-stat-num { font-size: 22px; }
@@ -845,7 +1014,7 @@
       align-items: flex-start;
       gap: 16px;
       padding: 36px 0;
-      border-bottom: 1px solid rgba(139,92,246,0.1);
+      border-bottom: 1px solid var(--violet-alpha-10);
     }
     .step-row:last-child { border-bottom: none; }
     .step-content { flex: none !important; width: 100% !important; }
@@ -915,8 +1084,8 @@
     .cursor-dot {
       width: 6px;
       height: 6px;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+      background: var(--pure-white);
+      box-shadow: 0 0 10px var(--white-alpha-80);
     }
 
     .cursor-ring {
@@ -929,13 +1098,13 @@
     .cursor-ring.cursor-hover {
       width: 12px;
       height: 12px;
-      background: rgba(0, 255, 255, 0.2);
-      border-color: #00ffff;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+      background: var(--accent-cyan-alpha-20);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px var(--accent-cyan-alpha-50);
     }
     
     .cursor-dot.cursor-hover {
-      background: #00ffff;
+      background: var(--accent-cyan);
     }
     
     body:not(:hover) .cursor-dot,
@@ -963,7 +1132,7 @@
     position: absolute;
     width: 2px;
     height: 100%;
-    background: rgba(139, 92, 246, 0.1);
+    background: var(--violet-alpha-10);
     left: 50%;
     transform: translateX(-50%);
     border-radius: 1px;
@@ -995,7 +1164,7 @@
     width: 12px;
     height: 12px;
     background: var(--surface2);
-    border: 2px solid rgba(139, 92, 246, 0.3);
+    border: 2px solid var(--violet-alpha-30);
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
@@ -1046,10 +1215,15 @@
   }
   #loader {
     position: fixed; inset: 0;
-    background: #0A0A0F;
+    background: var(--bg-deep);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     z-index: 99999;
     overflow: hidden;
+    /* CSS Fallback if JS fails */
+    animation: loader-fail-safe 0.5s ease 5s forwards;
+  }
+  @keyframes loader-fail-safe {
+    to { opacity: 0; visibility: hidden; pointer-events: none; }
   }
   /* Center glow */
   #loader::before {
@@ -1057,7 +1231,7 @@
     position: absolute;
     width: 360px; height: 360px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(109,40,217,0.22) 0%, transparent 65%);
+    background: radial-gradient(circle, var(--violet-vivid-alpha-20) 0%, transparent 65%);
     filter: blur(48px);
     pointer-events: none;
   }
@@ -1069,7 +1243,7 @@
     right: -200px; top: 50%;
     transform: translateY(-50%);
     border-radius: 50%;
-    background: radial-gradient(ellipse, rgba(109,40,217,0.28) 0%, transparent 65%);
+    background: radial-gradient(ellipse, var(--violet-vivid-alpha-30) 0%, transparent 65%);
     filter: blur(80px);
     pointer-events: none;
   }
@@ -1080,7 +1254,7 @@
     left: -200px; top: 50%;
     transform: translateY(-50%);
     border-radius: 50%;
-    background: radial-gradient(ellipse, rgba(139,92,246,0.22) 0%, transparent 65%);
+    background: radial-gradient(ellipse, var(--violet-alpha-20) 0%, transparent 65%);
     filter: blur(80px);
     pointer-events: none;
   }
@@ -1097,16 +1271,16 @@
   }
   .loader-ring-outer {
     width: 170px; height: 170px;
-    border: 1px solid rgba(139,92,246,0.12);
+    border: 1px solid var(--violet-vivid-alpha-12);
     border-top-color: var(--violet-mid);
-    border-right-color: rgba(139,92,246,0.45);
+    border-right-color: var(--violet-alpha-50);
     animation: l-spin-cw 2.4s linear infinite;
   }
   .loader-ring-inner {
     width: 118px; height: 118px;
-    border: 1px solid rgba(196,181,253,0.08);
+    border: 1px solid var(--violet-light-alpha-08);
     border-bottom-color: var(--violet-light);
-    border-left-color: rgba(196,181,253,0.35);
+    border-left-color: var(--violet-alpha-30);
     animation: l-spin-ccw 1.7s linear infinite;
   }
   @keyframes l-spin-cw  { to { transform: rotate(360deg); } }
@@ -1122,7 +1296,7 @@
 
   .loader-bar {
     width: 170px; height: 1px;
-    background: rgba(255,255,255,0.07);
+    background: var(--white-alpha-05);
     overflow: hidden;
     margin-bottom: 14px;
   }
@@ -1130,7 +1304,7 @@
     height: 100%;
     background: linear-gradient(90deg, var(--violet), var(--violet-mid));
     width: 0%;
-    box-shadow: 0 0 6px rgba(139,92,246,0.7);
+    box-shadow: 0 0 6px var(--violet-alpha-50);
   }
   .loader-pct {
     font-family: 'Manrope', sans-serif;
@@ -1150,18 +1324,8 @@
   #hero-badge, #ether-3d-container, #hero-sub, #hero-desc, #hero-actions {
     opacity: 0;
   }
-    .btn-top {
-    background: var(--surface2); border: 1px solid var(--border-subtle);
-    color: var(--muted-light); padding: 8px 12px; border-radius: 6px;
-    cursor: pointer; transition: all 0.3s ease;
-    display: flex; align-items: center; gap: 8px; font-size: 12px;
-  }
-  .btn-top:hover {
-    color: var(--white); border-color: var(--violet-mid);
-    background: var(--violet);
-  }
   .reveal-up {
-    /* opacity: 0; */
+    opacity: 0;
     transform: translateY(30px);
   }
 </style>
@@ -1194,7 +1358,7 @@
       <div class="timeline-progress"></div>
     </div>
     <ul class="timeline-points">
-      <li class="timeline-point active" data-section="hero" data-label="Start"></li>
+      <li class="timeline-point active" data-section="hero" data-label="Home"></li>
       <li class="timeline-point" data-section="features" data-label="Features"></li>
       <li class="timeline-point" data-section="howitworks" data-label="Process"></li>
       <li class="timeline-point" data-section="metrics" data-label="Impact"></li>
@@ -1205,75 +1369,109 @@
 
     <!-- ══ NAV ══ -->
     <nav class="nav">
-      <div class="nav-logo">ETH<span>E</span>R</div>
+      <div class="nav-logo" style="cursor:pointer" onclick="lenis.scrollTo('#hero')">ETH<span>E</span>R</div>
       <ul class="nav-links">
-        <li><a href="#">Features</a></li>
-        <li><a href="#">How it works</a></li>
-        <li><a href="#">Pricing</a></li>
-        <li><a href="#">Docs</a></li>
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#howitworks">Process</a></li>
+        <li><a href="#metrics">Impact</a></li>
+        <li><a href="#testimonials">Social</a></li>
+        <li><a href="#pricing">Pricing</a></li>
       </ul>
       <div class="nav-cta">
-        <button class="btn-ghost">Sign in</button>
-        <button class="btn-primary">Get started <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
-        <div class="nav-hamburger">
-          <span></span><span></span><span></span>
+        <button class="btn btn-sm btn-ghost nav-signin-btn">Sign in</button>
+        <button class="btn btn-sm btn-primary nav-main-cta">Get started <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+        <div class="nav-hamburger" id="nav-hamburger">
+          <div class="ham-line line-1"></div>
+          <div class="ham-line line-2"></div>
+          <div class="ham-line line-3"></div>
         </div>
       </div>
     </nav>
+
+    <!-- ══ UNIQUE CRYSTALLINE DRAWER ══ -->
+    <div class="nav-drawer" id="nav-drawer">
+      <div class="drawer-bg-shapes">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+      </div>
+      <div class="drawer-inner">
+        <div class="drawer-header-top">
+          <div class="nav-logo" style="cursor:pointer" onclick="toggleNav(); lenis.scrollTo('#hero')">ETH<span>E</span>R</div>
+          <div class="drawer-close-inside" id="drawer-close-inside">
+            <span></span><span></span>
+          </div>
+        </div>
+        <div class="drawer-nav-container">
+          <ul class="drawer-list">
+            <li class="drawer-item"><a href="#hero" class="drawer-link" data-text="Home">Home</a></li>
+            <li class="drawer-item"><a href="#features" class="drawer-link" data-text="Features">Features</a></li>
+            <li class="drawer-item"><a href="#howitworks" class="drawer-link" data-text="Process">Process</a></li>
+            <li class="drawer-item"><a href="#metrics" class="drawer-link" data-text="Impact">Impact</a></li>
+            <li class="drawer-item"><a href="#testimonials" class="drawer-link" data-text="Social">Social</a></li>
+            <li class="drawer-item"><a href="#pricing" class="drawer-link" data-text="Pricing">Pricing</a></li>
+          </ul>
+        </div>
+        <div class="drawer-bottom-cta">
+          <button class="btn btn-lg btn-primary btn-full">Start building free</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ══ HERO ══ -->
     <section class="hero" id="hero">
       <div class="particle-field">
         <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.55" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-          <line x1="10%" y1="22%" x2="27%" y2="36%" stroke="rgba(139,92,246,0.12)" stroke-width="1"/>
-          <line x1="27%" y1="36%" x2="46%" y2="26%" stroke="rgba(139,92,246,0.10)" stroke-width="1"/>
-          <line x1="46%" y1="26%" x2="65%" y2="39%" stroke="rgba(139,92,246,0.12)" stroke-width="1"/>
-          <line x1="65%" y1="39%" x2="84%" y2="24%" stroke="rgba(139,92,246,0.08)" stroke-width="1"/>
-          <line x1="84%" y1="24%" x2="95%" y2="35%" stroke="rgba(139,92,246,0.10)" stroke-width="1"/>
-          <line x1="16%" y1="60%" x2="32%" y2="65%" stroke="rgba(139,92,246,0.08)" stroke-width="1"/>
-          <line x1="32%" y1="65%" x2="50%" y2="60%" stroke="rgba(139,92,246,0.10)" stroke-width="1"/>
-          <line x1="50%" y1="60%" x2="70%" y2="68%" stroke="rgba(139,92,246,0.12)" stroke-width="1"/>
-          <line x1="70%" y1="68%" x2="87%" y2="58%" stroke="rgba(139,92,246,0.08)" stroke-width="1"/>
-          <line x1="10%" y1="22%" x2="16%" y2="60%" stroke="rgba(139,92,246,0.07)" stroke-width="1"/>
-          <line x1="27%" y1="36%" x2="32%" y2="65%" stroke="rgba(139,92,246,0.07)" stroke-width="1"/>
-          <line x1="46%" y1="26%" x2="50%" y2="60%" stroke="rgba(139,92,246,0.07)" stroke-width="1"/>
-          <line x1="65%" y1="39%" x2="70%" y2="68%" stroke="rgba(139,92,246,0.07)" stroke-width="1"/>
-          <line x1="84%" y1="24%" x2="87%" y2="58%" stroke="rgba(139,92,246,0.07)" stroke-width="1"/>
-          <line x1="6%"  y1="82%" x2="24%" y2="88%" stroke="rgba(139,92,246,0.06)" stroke-width="1"/>
-          <line x1="24%" y1="88%" x2="44%" y2="83%" stroke="rgba(139,92,246,0.08)" stroke-width="1"/>
-          <line x1="44%" y1="83%" x2="62%" y2="90%" stroke="rgba(139,92,246,0.06)" stroke-width="1"/>
-          <line x1="62%" y1="90%" x2="81%" y2="85%" stroke="rgba(139,92,246,0.08)" stroke-width="1"/>
+          <line x1="10%" y1="22%" x2="27%" y2="36%" stroke="var(--violet-alpha-10)" stroke-width="1"/>
+          <line x1="27%" y1="36%" x2="46%" y2="26%" stroke="var(--violet-alpha-10)" stroke-width="1"/>
+          <line x1="46%" y1="26%" x2="65%" y2="39%" stroke="var(--violet-alpha-10)" stroke-width="1"/>
+          <line x1="65%" y1="39%" x2="84%" y2="24%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="84%" y1="24%" x2="95%" y2="35%" stroke="var(--violet-alpha-10)" stroke-width="1"/>
+          <line x1="16%" y1="60%" x2="32%" y2="65%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="32%" y1="65%" x2="50%" y2="60%" stroke="var(--violet-alpha-10)" stroke-width="1"/>
+          <line x1="50%" y1="60%" x2="70%" y2="68%" stroke="var(--violet-alpha-10)" stroke-width="1"/>
+          <line x1="70%" y1="68%" x2="87%" y2="58%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="10%" y1="22%" x2="16%" y2="60%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="27%" y1="36%" x2="32%" y2="65%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="46%" y1="26%" x2="50%" y2="60%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="65%" y1="39%" x2="70%" y2="68%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="84%" y1="24%" x2="87%" y2="58%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="6%"  y1="82%" x2="24%" y2="88%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="24%" y1="88%" x2="44%" y2="83%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="44%" y1="83%" x2="62%" y2="90%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
+          <line x1="62%" y1="90%" x2="81%" y2="85%" stroke="var(--violet-alpha-05)" stroke-width="1"/>
           <!-- nodes -->
-          <circle cx="10%" cy="22%" r="2.5" fill="#8B5CF6" opacity="0.7"/>
-          <circle cx="10%" cy="22%" r="6" fill="#8B5CF6" opacity="0.08"/>
-          <circle cx="27%" cy="36%" r="3" fill="#8B5CF6" opacity="0.8"/>
-          <circle cx="27%" cy="36%" r="8" fill="#8B5CF6" opacity="0.07"/>
-          <circle cx="46%" cy="26%" r="2" fill="#C4B5FD" opacity="0.6"/>
-          <circle cx="65%" cy="39%" r="3.5" fill="#8B5CF6" opacity="0.75"/>
-          <circle cx="65%" cy="39%" r="9" fill="#8B5CF6" opacity="0.06"/>
-          <circle cx="84%" cy="24%" r="2" fill="#8B5CF6" opacity="0.6"/>
-          <circle cx="95%" cy="35%" r="2.5" fill="#C4B5FD" opacity="0.55"/>
-          <circle cx="16%" cy="60%" r="2" fill="#8B5CF6" opacity="0.6"/>
-          <circle cx="32%" cy="65%" r="3" fill="#8B5CF6" opacity="0.7"/>
-          <circle cx="50%" cy="60%" r="2.5" fill="#C4B5FD" opacity="0.65"/>
-          <circle cx="70%" cy="68%" r="3.5" fill="#8B5CF6" opacity="0.8"/>
-          <circle cx="70%" cy="68%" r="9" fill="#8B5CF6" opacity="0.07"/>
-          <circle cx="87%" cy="58%" r="2" fill="#8B5CF6" opacity="0.55"/>
-          <circle cx="6%"  cy="82%" r="2" fill="#C4B5FD" opacity="0.5"/>
-          <circle cx="24%" cy="88%" r="2.5" fill="#8B5CF6" opacity="0.6"/>
-          <circle cx="44%" cy="83%" r="2" fill="#8B5CF6" opacity="0.55"/>
-          <circle cx="62%" cy="90%" r="3" fill="#8B5CF6" opacity="0.65"/>
-          <circle cx="81%" cy="85%" r="2" fill="#C4B5FD" opacity="0.5"/>
+          <circle cx="10%" cy="22%" r="2.5" fill="var(--violet-mid)" opacity="0.7"/>
+          <circle cx="10%" cy="22%" r="6" fill="var(--violet-mid)" opacity="0.08"/>
+          <circle cx="27%" cy="36%" r="3" fill="var(--violet-mid)" opacity="0.8"/>
+          <circle cx="27%" cy="36%" r="8" fill="var(--violet-mid)" opacity="0.07"/>
+          <circle cx="46%" cy="26%" r="2" fill="var(--violet-light)" opacity="0.6"/>
+          <circle cx="65%" cy="39%" r="3.5" fill="var(--violet-mid)" opacity="0.75"/>
+          <circle cx="65%" cy="39%" r="9" fill="var(--violet-mid)" opacity="0.06"/>
+          <circle cx="84%" cy="24%" r="2" fill="var(--violet-mid)" opacity="0.6"/>
+          <circle cx="95%" cy="35%" r="2.5" fill="var(--violet-light)" opacity="0.55"/>
+          <circle cx="16%" cy="60%" r="2" fill="var(--violet-mid)" opacity="0.6"/>
+          <circle cx="32%" cy="65%" r="3" fill="var(--violet-mid)" opacity="0.7"/>
+          <circle cx="50%" cy="60%" r="2.5" fill="var(--violet-light)" opacity="0.65"/>
+          <circle cx="70%" cy="68%" r="3.5" fill="var(--violet-mid)" opacity="0.8"/>
+          <circle cx="70%" cy="68%" r="9" fill="var(--violet-mid)" opacity="0.07"/>
+          <circle cx="87%" cy="58%" r="2" fill="var(--violet-mid)" opacity="0.55"/>
+          <circle cx="6%"  cy="82%" r="2" fill="var(--violet-light)" opacity="0.5"/>
+          <circle cx="24%" cy="88%" r="2.5" fill="var(--violet-mid)" opacity="0.6"/>
+          <circle cx="44%" cy="83%" r="2" fill="var(--violet-mid)" opacity="0.55"/>
+          <circle cx="62%" cy="90%" r="3" fill="var(--violet-mid)" opacity="0.65"/>
+          <circle cx="81%" cy="85%" r="2" fill="var(--violet-light)" opacity="0.5"/>
           <!-- scattered small -->
-          <circle cx="5%"  cy="15%" r="1.5" fill="#8B5CF6" opacity="0.4"/>
-          <circle cx="36%" cy="12%" r="1"   fill="#C4B5FD" opacity="0.35"/>
-          <circle cx="55%" cy="17%" r="1.5" fill="#8B5CF6" opacity="0.45"/>
-          <circle cx="75%" cy="10%" r="1"   fill="#C4B5FD" opacity="0.3"/>
-          <circle cx="92%" cy="14%" r="1.5" fill="#8B5CF6" opacity="0.4"/>
-          <circle cx="4%"  cy="44%" r="1"   fill="#8B5CF6" opacity="0.35"/>
-          <circle cx="20%" cy="48%" r="1.5" fill="#C4B5FD" opacity="0.4"/>
-          <circle cx="58%" cy="45%" r="1"   fill="#8B5CF6" opacity="0.3"/>
-          <circle cx="93%" cy="47%" r="1.5" fill="#C4B5FD" opacity="0.35"/>
+          <circle cx="5%"  cy="15%" r="1.5" fill="var(--violet-mid)" opacity="0.4"/>
+          <circle cx="36%" cy="12%" r="1"   fill="var(--violet-light)" opacity="0.35"/>
+          <circle cx="55%" cy="17%" r="1.5" fill="var(--violet-mid)" opacity="0.45"/>
+          <circle cx="75%" cy="10%" r="1"   fill="var(--violet-light)" opacity="0.3"/>
+          <circle cx="92%" cy="14%" r="1.5" fill="var(--violet-mid)" opacity="0.4"/>
+          <circle cx="4%"  cy="44%" r="1"   fill="var(--violet-mid)" opacity="0.35"/>
+          <circle cx="20%" cy="48%" r="1.5" fill="var(--violet-light)" opacity="0.4"/>
+          <circle cx="58%" cy="45%" r="1"   fill="var(--violet-mid)" opacity="0.3"/>
+          <circle cx="93%" cy="47%" r="1.5" fill="var(--violet-light)" opacity="0.35"/>
         </svg>
       </div>
 
@@ -1292,8 +1490,8 @@
       </p>
 
       <div class="hero-actions" id="hero-actions">
-        <button class="btn-large-primary">Start building free <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:10px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
-        <button class="btn-large-outline">
+        <button class="btn btn-lg btn-primary">Start building free <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:10px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+        <button class="btn btn-lg btn-outline">
           <span class="play-icon"></span>
           Watch demo
         </button>
@@ -1564,7 +1762,7 @@
             <li class="disabled">Custom domain</li>
             <li class="disabled">SLA guarantee</li>
           </ul>
-          <button class="btn-price-outline">Get started free</button>
+          <button class="btn btn-md btn-outline btn-full">Get started free</button>
         </div>
         <div class="price-card popular reveal-up">
           <div class="popular-badge">Most Popular</div>
@@ -1580,7 +1778,7 @@
             <li>Custom domain</li>
             <li>99.9% SLA</li>
           </ul>
-          <button class="btn-price-primary">Start Pro trial <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+          <button class="btn btn-md btn-primary btn-full">Start Pro trial <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
         </div>
         <div class="price-card reveal-up">
           <div class="price-tier">Enterprise</div>
@@ -1595,7 +1793,7 @@
             <li>Private VPC + SSO</li>
             <li>99.99% SLA + SLOs</li>
           </ul>
-          <button class="btn-price-outline">Talk to sales <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+          <button class="btn btn-md btn-outline btn-full">Talk to sales <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
         </div>
       </div>
     </section>
@@ -1644,7 +1842,7 @@
           <div class="social-icon">gh</div>
         </div>
         <div class="footer-copy">© 2026 Ether. All rights reserved.</div>
-        <button class="btn-top" onclick="lenis.scrollTo(0)">Back to top <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(-90deg);"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+        <button class="btn btn-sm btn-outline" onclick="lenis.scrollTo(0)">Back to top <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(-90deg);"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
       </div>
     </footer>
 </div>
@@ -1660,7 +1858,7 @@
       height: 0.7,
       curveSegments: 24,
       bevelEnabled: true,
-      bevelThickness: 0.2,
+      bevelThickness: 0.4,
       bevelSize: 0.04,
       bevelOffset: 0,
       bevelSegments: 5,
@@ -1675,7 +1873,7 @@
 
     const LIGHT_CONFIG = {
       ambient: { color: 0xffffff, intensity: 1 },
-      main: { color: 0xffffff, intensity: 6, pos: { x: 8, y: 0, z: 5 } },
+      main: { color: 0xffffff, intensity: 4, pos: { x: 8, y: 0, z: 5 } },
       TextLightShadeColor: { color: "darkblue", intensity: 20, pos: { x: -4, y: 0, z: -3 } },
     };
 
@@ -1771,13 +1969,13 @@
       };
 
       // Bright royal blue — fast sweep L→R
-      const sViolet = makeSpot(0x1a56db, 10,  0, 20, 18, Math.PI / 6,  0.45);
+      const sViolet = makeSpot(0x1a56db, 2,  0, 20, 18, Math.PI / 6,  0.45);
       // Vivid navy blue — medium sweep R→L
-      const sCyan   = makeSpot(0x1e40af, 10,  0, 18, 18, Math.PI / 6,  0.5 );
+      const sCyan   = makeSpot(0x1e40af, 2,  0, 18, 18, Math.PI / 6,  0.5 );
       // Pure white — slow drift, keeps highlights bright
       // const sWhite  = makeSpot(0xffffff, 10,  0, 16, 22, Math.PI / 5,  0.35);
       // Sky blue — counter sweep for depth variation
-      const sFill   = makeSpot(0x60a5fa, 10,  0, 22, 14, Math.PI / 7,  0.55);
+      const sFill   = makeSpot(0x60a5fa, 2,  0, 22, 14, Math.PI / 7,  0.55);
 
       function animate3d() {
         requestAnimationFrame(animate3d);
@@ -2286,6 +2484,7 @@ observer.observe(document.body, { childList: true, subtree: true });
   // Timeline Synchronization Logic
   const timelinePoints = document.querySelectorAll('.timeline-point');
   const progressLine = document.querySelector('.timeline-progress');
+  const navLinks = document.querySelectorAll('.nav-links a');
 
   let lastActiveIndex = -1;
   let labelTimer = null;
@@ -2308,6 +2507,9 @@ observer.observe(document.body, { childList: true, subtree: true });
     // Update active point: all points up to and including the current index stay active
     timelinePoints.forEach((p, i) => p.classList.toggle('active', i <= index));
     
+    // Update navbar links active state
+    navLinks.forEach((link, i) => link.classList.toggle('active', i === index));
+    
     // Update progress bar height (stepped)
     const progressPercent = (index / (timelinePoints.length - 1)) * 100;
     gsap.to(progressLine, { 
@@ -2324,71 +2526,61 @@ observer.observe(document.body, { childList: true, subtree: true });
   };
 
 // GSAP Horizontal Scroll for "How It Works"
-  const isMobileView = window.innerWidth < 768;
   const hiwSection = document.querySelector('#howitworks');
   const hiwWrapper = document.querySelector('.steps-list');
-  let hiwDuration = 0;
+  const mm = gsap.matchMedia();
 
-  if (isMobileView && hiwWrapper) {
-    // Clear any GSAP-applied transform so the list isn't shifted off-screen
-    gsap.set(hiwWrapper, { clearProps: 'x,transform' });
-  }
+  mm.add("(min-width: 768px)", () => {
+    if (!hiwSection || !hiwWrapper) return;
 
-  if (hiwSection && hiwWrapper && !isMobileView) {
-    hiwDuration = hiwWrapper.scrollWidth - window.innerWidth;
     const hiwIndex = Array.from(timelinePoints).findIndex(p => p.dataset.section === 'howitworks');
     
-    ScrollTrigger.create({
-      id: 'hiw-pin',
-      trigger: hiwSection,
-      pin: true,
-      scrub: 1,
-      start: "top top",
-      end: () => `+=${hiwDuration}`,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        gsap.set(hiwWrapper, { x: -hiwDuration * self.progress });
-      },
-      onToggle: self => {
-        if (self.isActive) updateTimelineUI(hiwIndex);
-      }
-    });
-  }
-
-  // Reveal Up Utility
-  gsap.utils.toArray('.reveal-up').forEach(element => {
-    gsap.fromTo(element, 
-      { opacity: 1, y: 30 }, 
-      { 
-        opacity: 1, y: 0, 
-        duration: 1,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: element,
-          start: "top 90%",
-          toggleActions: "play none none none"
+    const hiwST = gsap.to(hiwWrapper, {
+      x: () => -(hiwWrapper.scrollWidth - window.innerWidth),
+      ease: "none",
+      scrollTrigger: {
+        id: 'hiw-pin',
+        trigger: hiwSection,
+        pin: true,
+        scrub: 1,
+        start: "top top",
+        end: () => "+=" + (hiwWrapper.scrollWidth - window.innerWidth),
+        invalidateOnRefresh: true,
+        onToggle: self => {
+          if (self.isActive) updateTimelineUI(hiwIndex);
         }
       }
-    );
+    });
+
+    return () => {
+      hiwST.kill();
+      gsap.set(hiwWrapper, { clearProps: "all" });
+    };
+  });
+
+  mm.add("(max-width: 767px)", () => {
+    if (hiwWrapper) gsap.set(hiwWrapper, { clearProps: 'all' });
   });
 
   // Paragraph fade-in on scroll (skip hero — it has its own entrance timeline)
-  gsap.utils.toArray('p').forEach(el => {
-    if (el.closest('#hero')) return;
-    gsap.fromTo(el,
-      { opacity: 0, y: 14 },
-      {
-        opacity: 1, y: 0,
-        duration: 0.75,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: el,
-          start: 'top 92%',
-          toggleActions: 'play none none none'
+  const initParagraphReveals = () => {
+    gsap.utils.toArray('p').forEach(el => {
+      if (el.closest('#hero')) return;
+      gsap.fromTo(el,
+        { opacity: 0, y: 14 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.75,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 94%',
+            toggleActions: 'play none none none'
+          }
         }
-      }
-    );
-  });
+      );
+    });
+  };
 
   // Hero Entrance Timeline
   const loaderPctEl = document.getElementById('loader-pct');
@@ -2415,39 +2607,95 @@ observer.observe(document.body, { childList: true, subtree: true });
       .fromTo("#hero-actions", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 }, "-=0.4");
   }
 
-  // Metrics Counter Animation
-  const metricsSection = document.querySelector('#metrics');
-  const heroSection = document.querySelector('#hero');
+  // Unique Crystalline Drawer Logic
+  const ham = document.getElementById('nav-hamburger');
+  const drawer = document.getElementById('nav-drawer');
+  const drawerLinks = document.querySelectorAll('.drawer-link');
+  const drawerItems = document.querySelectorAll('.drawer-item');
+  const drawerCTA = document.querySelector('.drawer-bottom-cta');
+  
+  let isNavOpen = false;
 
-  const animateCounter = (triggerElement, selector) => {
-    ScrollTrigger.create({
-      trigger: triggerElement,
-      start: "top bottom",
-      onEnter: () => {
-        const nums = triggerElement.querySelectorAll(selector);
-        nums.forEach(num => {
-          const target = parseFloat(num.getAttribute('data-target'));
-          const prefix = num.getAttribute('data-prefix') || '';
-          const suffix = num.getAttribute('data-suffix') || '';
-          const decimals = target % 1 !== 0 ? 1 : 0;
+  const toggleNav = () => {
+    isNavOpen = !isNavOpen;
+    ham.classList.toggle('open', isNavOpen);
+    
+    const tl = gsap.timeline();
 
-          gsap.to({ val: 0 }, {
-            val: target,
-            duration: 2,
-            delay: 0.5, // Explicit delay
-            ease: "power2.out",
-            onUpdate: function() {
-              num.textContent = prefix + this.targets()[0].val.toFixed(decimals) + suffix;
-            }
-          });
-        });
-      },
-      once: true
+    if (isNavOpen) {
+      gsap.set(drawer, { visibility: 'visible', pointerEvents: 'all' });
+      // Unfold animation using clip-path
+      tl.to(drawer, {
+        clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+        duration: 0.8,
+        ease: 'power4.inOut'
+      })
+      .to('.bg-shape', {
+        opacity: 0.4, scale: 1, duration: 1, stagger: 0.1, ease: 'power2.out'
+      }, '-=0.4')
+      .fromTo(drawerLinks, 
+        { y: 100, opacity: 0, rotateX: -45 }, 
+        { y: 0, opacity: 1, rotateX: 0, duration: 0.8, stagger: 0.08, ease: 'power3.out' }, 
+        '-=0.6'
+      )
+      .to(drawerCTA, { opacity: 1, y: 0, duration: 0.5 }, '-=0.4');
+    } else {
+      tl.to(drawerCTA, { opacity: 0, y: 20, duration: 0.3 })
+      .to(drawerLinks, { 
+        y: -100, opacity: 0, rotateX: 45, duration: 0.5, stagger: 0.03, ease: 'power3.in' 
+      }, '-=0.2')
+      .to(drawer, {
+        clipPath: 'polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%)',
+        duration: 0.6,
+        ease: 'power4.inOut'
+      }, '-=0.3')
+      .set(drawer, { visibility: 'hidden', pointerEvents: 'none' });
+    }
+  };
+
+  ham?.addEventListener('click', toggleNav);
+  document.getElementById('drawer-close-inside')?.addEventListener('click', toggleNav);
+
+  // Sync drawer active states and click-to-scroll
+  drawerLinks.forEach((link, i) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href');
+      const targetElement = document.querySelector(targetId);
+      
+      toggleNav(); // Close drawer
+      
+      if (targetElement) {
+        setTimeout(() => {
+          lenis.scrollTo(targetElement, { offset: 0, duration: 1.5 });
+        }, 600);
+      }
+    });
+  });
+
+  // Update original updateTimelineUI to include drawer links
+  const originalUpdateUI = updateTimelineUI;
+  updateTimelineUI = (index) => {
+    originalUpdateUI(index);
+    drawerLinks.forEach((link, i) => {
+      link.classList.toggle('active', i === index);
     });
   };
 
-  if (metricsSection) animateCounter(metricsSection, '.metric-num');
-  if (heroSection) animateCounter(heroSection, '.hero-stat-num');
+  // Parallax effect for drawer links on tilt/touch (Subtle)
+  drawer.addEventListener('mousemove', (e) => {
+    if (!isNavOpen) return;
+    const { clientX, clientY } = e;
+    const xPos = (clientX / window.innerWidth - 0.5) * 30;
+    const yPos = (clientY / window.innerHeight - 0.5) * 30;
+    
+    gsap.to('.drawer-nav-container', {
+      x: xPos,
+      y: yPos,
+      duration: 1,
+      ease: 'power2.out'
+    });
+  });
 
   // ScrollSpy using ScrollTrigger for each section
   timelinePoints.forEach((point, index) => {
@@ -2472,7 +2720,19 @@ observer.observe(document.body, { childList: true, subtree: true });
     }
   });
 
-  // Click-to-scroll functionality
+  // Navbar links smooth scroll
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href');
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        lenis.scrollTo(targetElement, { offset: 0, duration: 1.5 });
+      }
+    });
+  });
+
+  // Click-to-scroll functionality for timeline
   timelinePoints.forEach((point, index) => {
     point.addEventListener('click', () => {
       const targetId = point.dataset.section;
@@ -2485,49 +2745,72 @@ observer.observe(document.body, { childList: true, subtree: true });
 
 // Section title scroll reveal — split into visual lines, reveal each line up
 function splitTitleLines(el) {
-  const words = el.innerText.trim().split(/\s+/);
+  try {
+    const words = el.innerText.trim().split(/\s+/);
+    el.innerHTML = words
+      .map(w => `<span style="display:inline-block;white-space:pre">${w} </span>`)
+      .join('');
 
-  // Render each word as a measurable inline span
-  el.innerHTML = words
-    .map(w => `<span style="display:inline-block;white-space:pre">${w} </span>`)
-    .join('');
+    const spans = Array.from(el.querySelectorAll('span'));
+    const groups = [];
+    let lastTop = null;
 
-  // Group words that share the same visual line using getBoundingClientRect for
-  // sub-pixel accuracy — offsetTop can round incorrectly with certain fonts/zoom levels
-  const spans = Array.from(el.querySelectorAll('span'));
-  const groups = [];
-  let lastTop = null;
+    spans.forEach((span, i) => {
+      const top = span.getBoundingClientRect().top;
+      if (lastTop === null || Math.abs(top - lastTop) > 8) {
+        groups.push([]);
+        lastTop = top;
+      }
+      groups[groups.length - 1].push(words[i]);
+    });
 
-  spans.forEach((span, i) => {
-    const top = span.getBoundingClientRect().top;
-    if (lastTop === null || Math.abs(top - lastTop) > 8) {
-      groups.push([]);
-      lastTop = top;
-    }
-    groups[groups.length - 1].push(words[i]);
-  });
+    el.innerHTML = groups
+      .map(lineWords =>
+        `<div style="overflow:hidden;display:block">` +
+          `<div class="t-line">${lineWords.join(' ')}</div>` +
+        `</div>`
+      )
+      .join('');
 
-  // Rebuild: each line wrapped in overflow:hidden clip + inner div to animate
-  el.innerHTML = groups
-    .map(lineWords =>
-      `<div style="overflow:hidden;display:block">` +
-        `<div class="t-line">${lineWords.join(' ')}</div>` +
-      `</div>`
-    )
-    .join('');
-
-  return Array.from(el.querySelectorAll('.t-line'));
+    return Array.from(el.querySelectorAll('.t-line'));
+  } catch (e) {
+    console.error("Title splitting failed", e);
+    return [];
+  }
 }
 
 // Step title reveal — driven by hiw-pin ScrollTrigger progress
 const STEP_THRESHOLDS = [0.02, 0.34, 0.67];
 const stepTitleData = [];
 
-// Defer all line-splitting until web fonts are confirmed loaded — without this,
-// measurements use the fallback font's character widths and line breaks are wrong
-document.fonts.ready.then(() => {
+function initScrollAnimations() {
+  // Reveal Up Utility
+  gsap.utils.toArray('.reveal-up').forEach(element => {
+    gsap.fromTo(element, 
+      { opacity: 0, y: 30 }, 
+      { 
+        opacity: 1, y: 0, 
+        duration: 1,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: element,
+          start: "top 94%",
+          toggleActions: "play none none none"
+        }
+      }
+    );
+  });
+
+  initParagraphReveals();
+
+  // Reveal section titles
   gsap.utils.toArray('.section-title').forEach(title => {
     const lines = splitTitleLines(title);
+    if (!lines.length) {
+      // Fallback if splitting fails
+      gsap.fromTo(title, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1, scrollTrigger: { trigger: title, start: 'top 88%' }});
+      return;
+    }
 
     gsap.fromTo(lines,
       { y: '110%' },
@@ -2545,44 +2828,86 @@ document.fonts.ready.then(() => {
     );
   });
 
+  // Init step titles
   gsap.utils.toArray('.step-title').forEach((title, i) => {
     const lines = splitTitleLines(title);
-    gsap.set(lines, { y: '110%' });
-    stepTitleData.push({ lines, done: false, threshold: STEP_THRESHOLDS[i] });
+    if (lines.length) {
+      gsap.set(lines, { y: '110%' });
+      stepTitleData.push({ lines, done: false, threshold: STEP_THRESHOLDS[i] });
+    }
   });
 
   ScrollTrigger.refresh();
-});
-
-if (!isMobileView) {
-  // Desktop: step titles fire at specific progress points of the horizontal scroll
-  lenis.on('scroll', () => {
-    if (!stepTitleData.length) return;
-    const hiwST = ScrollTrigger.getById('hiw-pin');
-    if (!hiwST) return;
-    const p = hiwST.progress;
-    stepTitleData.forEach(item => {
-      if (!item.done && p >= item.threshold) {
-        item.done = true;
-        gsap.to(item.lines, { y: '0%', duration: 0.85, ease: 'power4.out', stagger: 0.1 });
-      }
-    });
-  });
-} else {
-  // Mobile: steps are stacked vertically, use normal scroll-based triggers
-  document.querySelectorAll('.step-title').forEach((el, i) => {
-    ScrollTrigger.create({
-      trigger: el,
-      start: 'top 88%',
-      onEnter: () => {
-        if (stepTitleData[i] && !stepTitleData[i].done) {
-          stepTitleData[i].done = true;
-          gsap.to(stepTitleData[i].lines, { y: '0%', duration: 0.85, ease: 'power4.out', stagger: 0.1 });
-        }
-      }
-    });
-  });
 }
+
+// Global initialization
+function startAll() {
+  if (window.isInitialized) return;
+  window.isInitialized = true;
+  
+  if (document.fonts) {
+    Promise.race([
+      document.fonts.ready,
+      new Promise(resolve => setTimeout(resolve, 800)) // Shorter font timeout
+    ]).then(initScrollAnimations);
+  } else {
+    initScrollAnimations();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', startAll);
+// Fallback for window.load
+window.addEventListener('load', startAll);
+
+// Safety reveal: if the page is still blank after 3 seconds, force show it
+setTimeout(() => {
+  const loader = document.getElementById('loader');
+  if (loader && loader.style.display !== 'none') {
+    console.warn("Safety reveal triggered");
+    gsap.to("#loader", { opacity: 0, duration: 0.5, onComplete: () => {
+      loader.style.display = 'none';
+      playHeroTimeline();
+      // Force reveal-up elements if they didn't animate
+      gsap.to('.reveal-up', { opacity: 1, y: 0, duration: 0.5, stagger: 0.05 });
+    }});
+  }
+}, 3500);
+
+  // Handle step titles for both desktop and mobile
+  mm.add("(min-width: 768px)", () => {
+    const titleListener = () => {
+      if (!stepTitleData.length) return;
+      const hiwST = ScrollTrigger.getById('hiw-pin');
+      if (!hiwST) return;
+      const p = hiwST.progress;
+      stepTitleData.forEach(item => {
+        if (!item.done && p >= item.threshold) {
+          item.done = true;
+          gsap.to(item.lines, { y: '0%', duration: 0.85, ease: 'power4.out', stagger: 0.1 });
+        }
+      });
+    };
+    lenis.on('scroll', titleListener);
+    return () => lenis.off('scroll', titleListener);
+  });
+
+  mm.add("(max-width: 767px)", () => {
+    const mobileTriggers = [];
+    document.querySelectorAll('.step-title').forEach((el, i) => {
+      const st = ScrollTrigger.create({
+        trigger: el,
+        start: 'top 88%',
+        onEnter: () => {
+          if (stepTitleData[i] && !stepTitleData[i].done) {
+            stepTitleData[i].done = true;
+            gsap.to(stepTitleData[i].lines, { y: '0%', duration: 0.85, ease: 'power4.out', stagger: 0.1 });
+          }
+        }
+      });
+      mobileTriggers.push(st);
+    });
+    return () => mobileTriggers.forEach(st => st.kill());
+  });
 </script>
 </body>
 </html>
