@@ -8,7 +8,8 @@
 <script type="importmap">
 {
   "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/"
   }
 }
 </script>
@@ -16,8 +17,9 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --base: #050507ba;
-    --surface: #0e0e13c8;
+    --base: #050507f3;
+    --surface: #0e0e13e6;
+    --surface-100: #0e0e13;
     --surface2: #13131A;
     --violet: #6D28D9;
     --violet-mid: #8B5CF6;
@@ -155,7 +157,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 120px 64px 100px;
+    padding: 60px 64px 100px;
     overflow: hidden;
   }
   .particle-field {
@@ -176,7 +178,6 @@
     border: 1px solid rgba(139,92,246,0.3);
     border-radius: 100px;
     padding: 6px 14px 6px 10px;
-    margin-bottom: 48px;
     position: relative; z-index: 2;
   }
   .hero-badge-dot {
@@ -196,11 +197,19 @@
     text-align: center; margin-bottom: 28px;
   }
   .hero-headline .word-large {
-    display: inline-flex;
+    display: flex;
     font-family: 'Syne', sans-serif;
     font-weight: 800; font-size: 128px;
     line-height: 0.9; letter-spacing: -0.04em;
-    /* Remove background from here to avoid empty text clipping issues */
+    height: 240px;
+    width: 100vw; /* Full viewport width */
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%); /* Center breakout container */
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    overflow: visible;
   }
 
   .letter-container {
@@ -248,9 +257,18 @@
     font-family: 'Manrope', sans-serif;
     font-size: 14px; font-weight: 700; color: #fff;
     background: linear-gradient(135deg, #7C3AED, #6D28D9);
-    border: none; padding: 14px 32px; border-radius: 8px; cursor: pointer;
+    border: 2px solid transparent; /* Prepare border space */
+    padding: 12px 30px; /* Adjusted padding to account for border */
+    border-radius: 8px; cursor: pointer;
     box-shadow: 0 0 32px rgba(109,40,217,0.4), 0 4px 16px rgba(0,0,0,0.4);
     white-space: nowrap;
+    transition: all 0.3s ease;
+  }
+  .btn-large-primary:hover {
+    background: #fff;
+    border-color: #6D28D9; /* Using the purple from the gradient */
+    color: #6D28D9;
+    box-shadow: none;
   }
   .btn-large-outline {
     font-family: 'Manrope', sans-serif;
@@ -406,8 +424,8 @@
     display: flex;
     align-items: center;
     gap: 80px;
-    width: 100vw;
-    padding-right: 120px;
+    width: 90vw;
+    padding-right: 60px;
     flex-shrink: 0;
     position: relative;
   }
@@ -692,7 +710,7 @@
   ══════════════════════════════ */
   .footer {
     padding: 64px 64px 48px; 
-    background: linear-gradient(180deg, var(--surface) 0%, #08050e 100%);
+    background: linear-gradient(180deg, var(--surface-100) 0%, #08050e 100%);
     border-top: 1px solid var(--border-subtle); 
     position: relative;
     overflow: hidden;
@@ -986,9 +1004,77 @@
   @media (max-width: 1024px) {
     .scroll-timeline { display: none; }
   }
+  .btn-arrow {
+    transition: transform 0.3s ease;
+  }
+  button:hover .btn-arrow {
+    transform: translateX(5px);
+  }
+  #loader {
+    position: fixed; inset: 0; 
+    background: radial-gradient(circle at center, #13131A 0%, #050507 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 99999;
+    overflow: hidden;
+  }
+
+  /* Animated lines for loader background */
+  .loader-lines {
+    position: absolute; width: 100%; height: 100%;
+    opacity: 0.2;
+  }
+  .line {
+    position: absolute; width: 1px; height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--violet-mid), transparent);
+    animation: moveLine 4s linear infinite;
+  }
+  @keyframes moveLine {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+
+  .loader-content { text-align: center; width: 200px; position: relative; z-index: 1; }
+  .loader-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px;
+    letter-spacing: 0.12em; color: var(--white); margin-bottom: 20px;
+  }
+  .loader-logo span { color: var(--violet-mid); }
+  .loader-bar { height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; overflow: hidden; }
+  .loader-progress { height: 100%; background: var(--violet-mid); width: 0%; box-shadow: 0 0 10px var(--violet-mid); }
+
+  #hero-badge, #ether-3d-container, #hero-sub, #hero-desc, #hero-actions {
+    opacity: 0;
+  }
+    .btn-top {
+    background: var(--surface2); border: 1px solid var(--border-subtle);
+    color: var(--muted-light); padding: 8px 12px; border-radius: 6px;
+    cursor: pointer; transition: all 0.3s ease;
+    display: flex; align-items: center; gap: 8px; font-size: 12px;
+  }
+  .btn-top:hover {
+    color: var(--white); border-color: var(--violet-mid);
+    background: var(--violet);
+  }
+  .reveal-up {
+    opacity: 0;
+    transform: translateY(30px);
+  }
 </style>
 </head>
 <body>
+  <div id="loader">
+    <div class="loader-lines">
+      <div class="line" style="left: 10%"></div>
+      <div class="line" style="left: 30%; animation-delay: 1s"></div>
+      <div class="line" style="left: 50%; animation-delay: 2s"></div>
+      <div class="line" style="left: 70%; animation-delay: 1.5s"></div>
+      <div class="line" style="left: 90%; animation-delay: 0.5s"></div>
+    </div>
+    <div class="loader-content">
+      <div class="loader-logo">ETH<span>E</span>R</div>
+      <div class="loader-bar"><div class="loader-progress"></div></div>
+    </div>
+  </div>
 
 <div class="design-board">
   <canvas id="bg-canvas"></canvas>
@@ -1005,7 +1091,6 @@
       <li class="timeline-point" data-section="metrics" data-label="Impact"></li>
       <li class="timeline-point" data-section="testimonials" data-label="Social"></li>
       <li class="timeline-point" data-section="pricing" data-label="Pricing"></li>
-      <li class="timeline-point" data-section="footer" data-label="Connect"></li>
     </ul>
   </nav>
 
@@ -1020,7 +1105,7 @@
       </ul>
       <div class="nav-cta">
         <button class="btn-ghost">Sign in</button>
-        <button class="btn-primary">Get started →</button>
+        <button class="btn-primary">Get started <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
         <div class="nav-hamburger">
           <span></span><span></span><span></span>
         </div>
@@ -1083,22 +1168,22 @@
         </svg>
       </div>
 
-      <div class="hero-badge">
+      <div class="hero-badge" id="hero-badge">
         <div class="hero-badge-dot"></div>
-        <span>Now in public beta — join 2,000+ teams</span>
+        <span>join 2000+ teams</span>
       </div>
 
       <div class="hero-headline">
-        <span class="word-large">ETHER</span>
-        <span class="word-sub">AI infrastructure for the next generation</span>
+        <div id="ether-3d-container" class="word-large"></div>
+        <span class="word-sub" id="hero-sub">AI infrastructure for the next generation</span>
       </div>
 
-      <p class="hero-desc">
+      <p class="hero-desc" id="hero-desc">
         Deploy, scale, and monitor your AI models with zero overhead. Built for teams who move fast and need infrastructure that keeps up.
       </p>
 
-      <div class="hero-actions">
-        <button class="btn-large-primary">Start building free →</button>
+      <div class="hero-actions" id="hero-actions">
+        <button class="btn-large-primary">Start building free <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:10px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
         <button class="btn-large-outline">
           <span class="play-icon"></span>
           Watch demo
@@ -1107,22 +1192,22 @@
 
       <div class="hero-stats">
         <div class="hero-stat">
-          <div class="hero-stat-num">99.9<span>%</span></div>
+          <div class="hero-stat-num" data-target="99.9" data-suffix="%">0</div>
           <div class="hero-stat-label">Uptime SLA</div>
         </div>
         <div class="hero-stat-sep"></div>
         <div class="hero-stat">
-          <div class="hero-stat-num">2M<span>+</span></div>
+          <div class="hero-stat-num" data-target="2" data-suffix="M+">0</div>
           <div class="hero-stat-label">API calls/day</div>
         </div>
         <div class="hero-stat-sep"></div>
         <div class="hero-stat">
-          <div class="hero-stat-num">&lt;50<span>ms</span></div>
+          <div class="hero-stat-num" data-prefix="<" data-target="50" data-suffix="ms">0</div>
           <div class="hero-stat-label">Avg latency</div>
         </div>
         <div class="hero-stat-sep"></div>
         <div class="hero-stat">
-          <div class="hero-stat-num">150<span>+</span></div>
+          <div class="hero-stat-num" data-target="150" data-suffix="+">0</div>
           <div class="hero-stat-label">Countries</div>
         </div>
       </div>
@@ -1133,41 +1218,41 @@
     <!-- ══ FEATURES ══ -->
     <section class="features" id="features">
       <div class="features-header">
-        <div>
+        <div class="reveal-up">
           <div class="section-eyebrow">What you get</div>
           <h2 class="section-title">Everything you need to ship AI, fast.</h2>
         </div>
-        <div>
+        <div class="reveal-up">
           <p class="section-sub">From model deployment to real-time monitoring — all the infrastructure your team needs without the ops overhead.</p>
         </div>
       </div>
       <div class="features-grid">
-        <div class="feat-card highlighted">
+        <div class="feat-card highlighted reveal-up">
           <div class="feat-icon">⚡</div>
           <div class="feat-title">Instant Deployment</div>
           <p class="feat-desc">Push models to production in under 60 seconds. Rollback is one click. Zero downtime deploys by default.</p>
         </div>
-        <div class="feat-card">
+        <div class="feat-card reveal-up">
           <div class="feat-icon">🔒</div>
           <div class="feat-title">Enterprise Security</div>
           <p class="feat-desc">SOC2 Type II compliant. End-to-end encryption, private VPC, SSO and RBAC out of the box.</p>
         </div>
-        <div class="feat-card">
+        <div class="feat-card reveal-up">
           <div class="feat-icon">🔗</div>
           <div class="feat-title">150+ Integrations</div>
           <p class="feat-desc">Connect to your existing stack in minutes. Webhooks, REST, and GraphQL APIs included.</p>
         </div>
-        <div class="feat-card">
+        <div class="feat-card reveal-up">
           <div class="feat-icon">📊</div>
           <div class="feat-title">Real-time Analytics</div>
           <p class="feat-desc">Model performance, token usage, error rates, and cost per inference — all in one dashboard.</p>
         </div>
-        <div class="feat-card">
+        <div class="feat-card reveal-up">
           <div class="feat-icon">♾️</div>
           <div class="feat-title">Auto-scaling</div>
           <p class="feat-desc">Handles 0 to 10 million requests without configuration. Pay only for what you use.</p>
         </div>
-        <div class="feat-card">
+        <div class="feat-card reveal-up">
           <div class="feat-icon">⚙️</div>
           <div class="feat-title">Open API</div>
           <p class="feat-desc">Full programmatic control. Terraform provider, CLI, and SDKs for Python, Node, and Go.</p>
@@ -1300,7 +1385,7 @@
 
     <!-- ══ TESTIMONIALS ══ -->
     <section class="testimonials" id="testimonials">
-      <div class="testi-header">
+      <div class="testi-header reveal-up">
         <div>
           <div class="section-eyebrow">Social proof</div>
           <h2 class="section-title" style="margin-bottom:0">Trusted by teams shipping real AI.</h2>
@@ -1308,7 +1393,7 @@
         <p class="section-sub" style="margin-bottom:0">From two-person startups to Series B companies — teams that can't afford downtime choose Ether.</p>
       </div>
       <div class="testi-grid">
-        <div class="testi-card">
+        <div class="testi-card reveal-up">
           <div class="testi-stars">★★★★★</div>
           <div class="testi-quote-mark">"</div>
           <p class="testi-text">We cut our infrastructure costs by 60% in the first month. The auto-scaling alone paid for three months of the subscription.</p>
@@ -1320,7 +1405,7 @@
             </div>
           </div>
         </div>
-        <div class="testi-card featured">
+        <div class="testi-card featured reveal-up">
           <div class="testi-stars">★★★★★</div>
           <div class="testi-quote-mark">"</div>
           <p class="testi-text">The deployment experience is unlike anything else. We went from a Jupyter notebook to a production API serving 50k users in one afternoon.</p>
@@ -1332,7 +1417,7 @@
             </div>
           </div>
         </div>
-        <div class="testi-card">
+        <div class="testi-card reveal-up">
           <div class="testi-stars">★★★★★</div>
           <div class="testi-quote-mark">"</div>
           <p class="testi-text">Our on-call alerts dropped to zero after migrating to Ether. The monitoring dashboard surfaces things we didn't even know to look for.</p>
@@ -1351,13 +1436,13 @@
 
     <!-- ══ PRICING ══ -->
     <section class="pricing" id="pricing">
-      <div class="pricing-header">
+      <div class="pricing-header reveal-up">
         <div class="section-eyebrow">Pricing</div>
         <h2 class="section-title" style="max-width:100%;text-align:center">Simple, transparent pricing.</h2>
         <p class="section-sub" style="max-width:480px;margin:0 auto;text-align:center">No hidden fees. No surprise bills. Start free, upgrade when you scale.</p>
       </div>
       <div class="pricing-grid">
-        <div class="price-card">
+        <div class="price-card reveal-up">
           <div class="price-tier">Starter</div>
           <div class="price-amount"><span class="currency">$</span>0</div>
           <div class="price-period">Free forever · up to 10k calls/mo</div>
@@ -1372,7 +1457,7 @@
           </ul>
           <button class="btn-price-outline">Get started free</button>
         </div>
-        <div class="price-card popular">
+        <div class="price-card popular reveal-up">
           <div class="popular-badge">Most Popular</div>
           <div class="price-tier">Pro</div>
           <div class="price-amount"><span class="currency">$</span>49</div>
@@ -1386,9 +1471,9 @@
             <li>Custom domain</li>
             <li>99.9% SLA</li>
           </ul>
-          <button class="btn-price-primary">Start Pro trial →</button>
+          <button class="btn-price-primary">Start Pro trial <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
         </div>
-        <div class="price-card">
+        <div class="price-card reveal-up">
           <div class="price-tier">Enterprise</div>
           <div class="price-amount" style="font-size:38px;padding-top:8px">Custom</div>
           <div class="price-period">Volume pricing · dedicated infra</div>
@@ -1401,7 +1486,7 @@
             <li>Private VPC + SSO</li>
             <li>99.99% SLA + SLOs</li>
           </ul>
-          <button class="btn-price-outline">Talk to sales →</button>
+          <button class="btn-price-outline">Talk to sales <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
         </div>
       </div>
     </section>
@@ -1444,17 +1529,129 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <div class="footer-copy">© 2026 Ether. All rights reserved.</div>
         <div class="footer-socials">
           <div class="social-icon">𝕏</div>
           <div class="social-icon">in</div>
           <div class="social-icon">gh</div>
         </div>
+        <div class="footer-copy">© 2026 Ether. All rights reserved.</div>
+        <button class="btn-top" onclick="lenis.scrollTo(0)">Back to top <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(-90deg);"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
       </div>
     </footer>
 </div>
 <script type="module">
     import * as THREE from 'three';
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+    // --- 3D ETHER CONFIGURATION ---
+    const TEXT_CONFIG = {
+      content: 'ETHER',
+      size: 7,
+      height: 0.7,
+      curveSegments: 24,
+      bevelEnabled: true,
+      bevelThickness: 0.2,
+      bevelSize: 0.04,
+      bevelOffset: 0,
+      bevelSegments: 5,
+      scaleX: 1.25,
+      color: 0xffffff,
+      metalness: 0.6,
+      roughness: 0.1,
+      reflectivity: 1,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1
+    };
+
+    const LIGHT_CONFIG = {
+      ambient: { color: 0xffffff, intensity: 1 }, // Low ambient for high contrast
+      main: { color: 0xffffff, intensity: 6, pos: { x: 8, y: 0, z: 5 } }, // White light from right
+      TextLightShadeColor: { color: "darkblue", intensity: 20, pos: { x: -4, y: 0, z: -3 } }, //  light Shade from left
+    };
+
+    // --- 3D ETHER TEXT ---
+    const container3d = document.getElementById('ether-3d-container');
+    const scene3d = new THREE.Scene();
+    const camera3d = new THREE.PerspectiveCamera(30, container3d.offsetWidth / container3d.offsetHeight, 0.1, 1000);
+    camera3d.position.z = 25; // Further back with smaller FOV for orthographic-like feel
+    
+    // Hide initially for timeline
+    gsap.set("#ether-3d-container", { opacity: 0 });
+
+    const renderer3d = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer3d.setSize(container3d.offsetWidth, container3d.offsetHeight);
+    renderer3d.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container3d.appendChild(renderer3d.domElement);
+
+    const loader = new FontLoader();
+    loader.load('https://cdn.jsdelivr.net/npm/three@0.158.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
+      const geometry = new TextGeometry(TEXT_CONFIG.content, {
+        font: font,
+        size: TEXT_CONFIG.size,
+        height: TEXT_CONFIG.height,
+        curveSegments: TEXT_CONFIG.curveSegments,
+        bevelEnabled: TEXT_CONFIG.bevelEnabled,
+        bevelThickness: TEXT_CONFIG.bevelThickness,
+        bevelSize: TEXT_CONFIG.bevelSize,
+        bevelOffset: TEXT_CONFIG.bevelOffset,
+        bevelSegments: TEXT_CONFIG.bevelSegments
+      });
+      
+      geometry.center();
+      
+      const material = new THREE.MeshPhysicalMaterial({
+        color: TEXT_CONFIG.color,
+        metalness: TEXT_CONFIG.metalness,
+        roughness: TEXT_CONFIG.roughness,
+        reflectivity: TEXT_CONFIG.reflectivity,
+        clearcoat: TEXT_CONFIG.clearcoat,
+        clearcoatRoughness: TEXT_CONFIG.clearcoatRoughness,
+      });
+      
+      const textMesh = new THREE.Mesh(geometry, material);
+      textMesh.scale.x = TEXT_CONFIG.scaleX; 
+      scene3d.add(textMesh);
+      
+      // Studio Lighting setup
+      const ambientLight = new THREE.AmbientLight(LIGHT_CONFIG.ambient.color, LIGHT_CONFIG.ambient.intensity);
+      scene3d.add(ambientLight);
+      
+      const mainLight = new THREE.DirectionalLight(LIGHT_CONFIG.main.color, LIGHT_CONFIG.main.intensity);
+      mainLight.position.set(LIGHT_CONFIG.main.pos.x, LIGHT_CONFIG.main.pos.y, LIGHT_CONFIG.main.pos.z);
+      scene3d.add(mainLight);
+      
+      const blueLight = new THREE.DirectionalLight(LIGHT_CONFIG.TextLightShadeColor.color, LIGHT_CONFIG.TextLightShadeColor.intensity);
+      blueLight.position.set(LIGHT_CONFIG.TextLightShadeColor.pos.x, LIGHT_CONFIG.TextLightShadeColor.pos.y, LIGHT_CONFIG.TextLightShadeColor.pos.z); 
+      scene3d.add(blueLight);
+
+      // let mouseX = 0;
+      // let mouseY = 0;
+      // window.addEventListener('mousemove', (e) => {
+      //   mouseX = (e.clientX - window.innerWidth / 2) / window.innerWidth;
+      //   mouseY = (e.clientY - window.innerHeight / 2) / window.innerHeight;
+      // });
+
+      function animate3d() {
+        requestAnimationFrame(animate3d);
+        
+        // Animate light position
+        const time = Date.now() * 0.001;
+        blueLight.position.x = Math.sin(time) * 10;
+        blueLight.position.z = Math.cos(time) * 5 + 5;
+        
+        renderer3d.render(scene3d, camera3d);
+      }
+      animate3d();
+    });
+
+    window.addEventListener('resize', () => {
+      if (!container3d) return;
+      camera3d.aspect = container3d.offsetWidth / container3d.offsetHeight;
+      camera3d.updateProjectionMatrix();
+      renderer3d.setSize(container3d.offsetWidth, container3d.offsetHeight);
+    });
+
     // Configuration | Edit these values to customise the effect.
     const CONFIG = {
   // Total node count
@@ -1971,16 +2168,53 @@ observer.observe(document.body, { childList: true, subtree: true });
     });
   }
 
+  // Reveal Up Utility
+  gsap.utils.toArray('.reveal-up').forEach(element => {
+    gsap.fromTo(element, 
+      { opacity: 0, y: 30 }, 
+      { 
+        opacity: 1, y: 0, 
+        duration: 1,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: element,
+          start: "top 90%",
+          toggleActions: "play none none none"
+        }
+      }
+    );
+  });
+
+  // Hero Entrance Timeline
+  const loaderTl = gsap.timeline();
+  loaderTl
+    .to(".loader-progress", { width: "100%", duration: 1.5, ease: "power2.inOut" })
+    .to("#loader", { opacity: 0, duration: 0.5, onComplete: () => {
+      document.getElementById('loader').style.display = 'none';
+      playHeroTimeline(); // Trigger hero entrance after loader
+    }});
+
+  function playHeroTimeline() {
+    const heroTl = gsap.timeline({ defaults: { ease: "power2.out" } });
+    heroTl
+      .fromTo("#hero-badge", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.8 })
+      .to("#ether-3d-container", { opacity: 1, duration: 0.5 }, "-=0.6")
+      .fromTo("#hero-sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 }, "-=0.4")
+      .fromTo("#hero-desc", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 }, "-=0.4")
+      .fromTo("#hero-actions", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 }, "-=0.4");
+  }
+
   // Metrics Counter Animation
   const metricsSection = document.querySelector('#metrics');
-  const metricNums = document.querySelectorAll('.metric-num');
+  const heroSection = document.querySelector('#hero');
 
-  if (metricsSection) {
+  const animateCounter = (triggerElement, selector) => {
     ScrollTrigger.create({
-      trigger: metricsSection,
-      start: "top 80%",
+      trigger: triggerElement,
+      start: "top bottom",
       onEnter: () => {
-        metricNums.forEach(num => {
+        const nums = triggerElement.querySelectorAll(selector);
+        nums.forEach(num => {
           const target = parseFloat(num.getAttribute('data-target'));
           const prefix = num.getAttribute('data-prefix') || '';
           const suffix = num.getAttribute('data-suffix') || '';
@@ -1989,6 +2223,7 @@ observer.observe(document.body, { childList: true, subtree: true });
           gsap.to({ val: 0 }, {
             val: target,
             duration: 2,
+            delay: 0.5, // Explicit delay
             ease: "power2.out",
             onUpdate: function() {
               num.textContent = prefix + this.targets()[0].val.toFixed(decimals) + suffix;
@@ -1996,9 +2231,12 @@ observer.observe(document.body, { childList: true, subtree: true });
           });
         });
       },
-      once: true // Only animate once
+      once: true
     });
-  }
+  };
+
+  if (metricsSection) animateCounter(metricsSection, '.metric-num');
+  if (heroSection) animateCounter(heroSection, '.hero-stat-num');
 
   // ScrollSpy using ScrollTrigger for each section
   timelinePoints.forEach((point, index) => {
@@ -2008,7 +2246,7 @@ observer.observe(document.body, { childList: true, subtree: true });
     if (targetElement && targetId !== 'howitworks') {
       ScrollTrigger.create({
         trigger: targetElement,
-        start: "top center",
+        start: "top 30%",
         end: "bottom center",
         onEnter: () => {
           const hiwActive = ScrollTrigger.getById('hiw-pin')?.isActive;
@@ -2033,30 +2271,6 @@ observer.observe(document.body, { childList: true, subtree: true });
       }
     });
   });
-
-// Header Reveal Animation
-const wordLarge = document.querySelector('.hero-headline .word-large');
-if (wordLarge) {
-  const text = wordLarge.textContent.trim();
-  wordLarge.textContent = '';
-  
-  [...text].forEach((char, i) => {
-    const container = document.createElement('span');
-    container.className = 'letter-container';
-    
-    const letter = document.createElement('span');
-    letter.className = 'letter';
-    letter.textContent = char === ' ' ? '\u00A0' : char; // Handle spaces
-    
-    container.appendChild(letter);
-    wordLarge.appendChild(container);
-    
-    // Staggered reveal
-    setTimeout(() => {
-      letter.classList.add('revealed');
-    }, 100 + (i * 300));
-  });
-}
 
 // Ensure ScrollTrigger refreshes after everything is set up
 ScrollTrigger.refresh();
