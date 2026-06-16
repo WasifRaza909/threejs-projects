@@ -2492,14 +2492,15 @@ function splitTitleLines(el) {
     .map(w => `<span style="display:inline-block;white-space:pre">${w} </span>`)
     .join('');
 
-  // Group words that share the same offsetTop (= same visual line)
+  // Group words that share the same visual line using getBoundingClientRect for
+  // sub-pixel accuracy — offsetTop can round incorrectly with certain fonts/zoom levels
   const spans = Array.from(el.querySelectorAll('span'));
   const groups = [];
   let lastTop = null;
 
   spans.forEach((span, i) => {
-    const top = span.offsetTop;
-    if (lastTop === null || Math.abs(top - lastTop) > 4) {
+    const top = span.getBoundingClientRect().top;
+    if (lastTop === null || Math.abs(top - lastTop) > 8) {
       groups.push([]);
       lastTop = top;
     }
@@ -2518,39 +2519,45 @@ function splitTitleLines(el) {
   return Array.from(el.querySelectorAll('.t-line'));
 }
 
-gsap.utils.toArray('.section-title').forEach(title => {
-  const lines = splitTitleLines(title);
-
-  gsap.fromTo(lines,
-    { y: '110%' },
-    {
-      y: '0%',
-      duration: 0.85,
-      ease: 'power4.out',
-      stagger: 0.1,
-      scrollTrigger: {
-        trigger: title,
-        start: 'top 88%',
-        toggleActions: 'play none none none',
-      }
-    }
-  );
-});
-
 // Step title reveal — driven by hiw-pin ScrollTrigger progress
-// Each step becomes visible at roughly 0, 1/3, and 2/3 of the horizontal scroll
 const STEP_THRESHOLDS = [0.02, 0.34, 0.67];
 const stepTitleData = [];
 
-gsap.utils.toArray('.step-title').forEach((title, i) => {
-  const lines = splitTitleLines(title);
-  gsap.set(lines, { y: '110%' });
-  stepTitleData.push({ lines, done: false, threshold: STEP_THRESHOLDS[i] });
+// Defer all line-splitting until web fonts are confirmed loaded — without this,
+// measurements use the fallback font's character widths and line breaks are wrong
+document.fonts.ready.then(() => {
+  gsap.utils.toArray('.section-title').forEach(title => {
+    const lines = splitTitleLines(title);
+
+    gsap.fromTo(lines,
+      { y: '110%' },
+      {
+        y: '0%',
+        duration: 0.85,
+        ease: 'power4.out',
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: title,
+          start: 'top 88%',
+          toggleActions: 'play none none none',
+        }
+      }
+    );
+  });
+
+  gsap.utils.toArray('.step-title').forEach((title, i) => {
+    const lines = splitTitleLines(title);
+    gsap.set(lines, { y: '110%' });
+    stepTitleData.push({ lines, done: false, threshold: STEP_THRESHOLDS[i] });
+  });
+
+  ScrollTrigger.refresh();
 });
 
 if (!isMobileView) {
   // Desktop: step titles fire at specific progress points of the horizontal scroll
   lenis.on('scroll', () => {
+    if (!stepTitleData.length) return;
     const hiwST = ScrollTrigger.getById('hiw-pin');
     if (!hiwST) return;
     const p = hiwST.progress;
@@ -2576,9 +2583,6 @@ if (!isMobileView) {
     });
   });
 }
-
-// Ensure ScrollTrigger refreshes after everything is set up
-ScrollTrigger.refresh();
 </script>
 </body>
 </html>
