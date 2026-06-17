@@ -2296,14 +2296,13 @@
         letterMeshes.forEach((mesh, i) => {
           const delay = i * 0.3;
 
-          // Gravity: starts slow at top, accelerates into the ground
+          // Drop from above, decelerates smoothly into final position
           gsap.fromTo(mesh.position, { y: DROP_Y }, {
             y: 0,
-            duration: 0.6,
-            ease: 'power3.in',
+            duration: 1.0,
+            ease: 'power4.out',
             delay,
           });
-
         });
       };
     });
