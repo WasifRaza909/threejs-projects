@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -13,7 +13,7 @@
   }
 }
 </script>
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./css/output.css">
 </head>
 <body>
   <div id="loader">
@@ -54,18 +54,18 @@
 
     <!-- ══ NAV ══ -->
     <nav class="nav">
-      <div class="nav-logo" style="cursor:pointer" onclick="lenis.scrollTo('#hero')">ETH<span>E</span>R</div>
-      <ul class="nav-links">
-        <li><a href="#hero">Home</a></li>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#howitworks">Process</a></li>
-        <li><a href="#metrics">Impact</a></li>
-        <li><a href="#testimonials">Social</a></li>
-        <li><a href="#pricing">Pricing</a></li>
+      <div id="nav-logo" class="font-syne font-extrabold text-xl tracking-[0.12em] text-[var(--white)] shrink-0 opacity-0" style="cursor:pointer" onclick="lenis.scrollTo('#hero')">ETH<span class="text-[var(--violet-mid)]">E</span>R</div>
+      <ul class="nav-links hidden md:flex md:gap-6 lg:gap-10 list-none h-full">
+        <li class="h-full"><a href="#hero">Home</a></li>
+        <li class="h-full"><a href="#features">Features</a></li>
+        <li class="h-full"><a href="#howitworks">Process</a></li>
+        <li class="h-full"><a href="#metrics">Impact</a></li>
+        <li class="h-full"><a href="#testimonials">Social</a></li>
+        <li class="h-full"><a href="#pricing">Pricing</a></li>
       </ul>
-      <div class="nav-cta">
-        <button class="btn btn-sm btn-ghost nav-signin-btn">Sign in</button>
-        <button class="btn btn-sm btn-primary nav-main-cta">Get started <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+      <div class="flex items-center gap-4">
+        <button class="btn btn-sm btn-ghost nav-signin-btn hidden md:inline-flex">Sign in</button>
+        <button class="btn btn-sm btn-primary nav-main-cta hidden md:inline-flex">Get started <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle colour theme">
           <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -85,15 +85,15 @@
         <div class="bg-shape shape-2"></div>
         <div class="bg-shape shape-3"></div>
       </div>
-      <div class="drawer-inner">
-        <div class="drawer-header-top">
-          <div class="nav-logo" style="cursor:pointer" onclick="toggleNav(); lenis.scrollTo('#hero')">ETH<span>E</span>R</div>
+      <div class="w-full h-full flex flex-col items-center justify-center py-15 px-10 relative">
+        <div class="absolute top-0 left-0 w-full py-8 px-10 flex items-center justify-between z-20">
+          <div class="font-syne font-extrabold text-xl tracking-[0.12em] text-[var(--white)] shrink-0" style="cursor:pointer" onclick="toggleNav(); lenis.scrollTo('#hero')">ETH<span class="text-[var(--violet-mid)]">E</span>R</div>
           <div class="drawer-close-inside" id="drawer-close-inside">
             <span></span><span></span>
           </div>
         </div>
         <div class="drawer-nav-container">
-          <ul class="drawer-list">
+          <ul class="list-none flex flex-col gap-6 items-center">
             <li class="drawer-item"><a href="#hero" class="drawer-link" data-text="Home">Home</a></li>
             <li class="drawer-item"><a href="#features" class="drawer-link" data-text="Features">Features</a></li>
             <li class="drawer-item"><a href="#howitworks" class="drawer-link" data-text="Process">Process</a></li>
@@ -103,14 +103,28 @@
           </ul>
         </div>
         <div class="drawer-bottom-cta">
-          <button class="btn btn-lg btn-primary btn-full">Start building free</button>
+          <div class="w-full h-px mb-6 bg-[linear-gradient(90deg,transparent,var(--violet-alpha-30),transparent)]"></div>
+          <div class="flex flex-col gap-3 w-full">
+            <button class="btn btn-lg btn-primary btn-full">
+              Get started free
+              <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+            <button class="btn btn-lg btn-outline btn-full">Sign in</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- ══ HERO ══ -->
-    <section class="hero" id="hero">
-      <div class="particle-field">
+    <section
+      id="hero"
+      class="relative flex flex-col items-center justify-center overflow-hidden
+             px-6 py-20 pb-16
+             md:px-12 md:py-24 md:pb-20
+             lg:px-16 lg:py-[60px] lg:pb-[100px] lg:min-h-[820px]"
+    >
+      <!-- particle field — keeps ::before radial-gradient overlay via CSS -->
+      <div class="particle-field absolute inset-0 overflow-hidden">
         <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.55" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <line x1="10%" y1="22%" x2="27%" y2="36%" stroke="var(--violet-alpha-10)" stroke-width="1"/>
           <line x1="27%" y1="36%" x2="46%" y2="26%" stroke="var(--violet-alpha-10)" stroke-width="1"/>
@@ -164,47 +178,83 @@
         </svg>
       </div>
 
-      <div class="hero-badge" id="hero-badge">
-        <div class="hero-badge-dot"></div>
-        <span>join 2000+ teams</span>
+      <!-- Badge -->
+      <div
+        id="hero-badge"
+        class="inline-flex items-center gap-2 relative z-[2] mb-8 md:mb-10
+               bg-[var(--violet-vivid-alpha-12)] border border-[var(--violet-alpha-30)]
+               rounded-full pl-2.5 pr-3.5 py-1.5"
+      >
+        <div class="w-1.5 h-1.5 shrink-0 rounded-full
+                    bg-[var(--violet-mid)] shadow-[0_0_0.5rem_var(--violet-mid)]"></div>
+        <span class="font-semibold uppercase tracking-[0.06em] text-[var(--violet-light)]
+                     text-2.5 md:text-3">join 2000+ teams</span>
       </div>
 
-      <div class="hero-headline">
+      <!-- Headline -->
+      <div class="relative z-[2] text-center mb-5 md:mb-7">
+        <!-- word-large class kept — JS + CSS handle 3D sizing & breakout layout -->
         <div id="ether-3d-container" class="word-large"></div>
-        <span class="word-sub" id="hero-sub">AI infrastructure for the next generation</span>
+        <span
+          id="hero-sub"
+          class="block font-manrope font-light uppercase text-[var(--violet-light)]
+                 text-3.5   tracking-[0.14em]  mt-3
+                 md:text-4.5 md:tracking-[0.2em]  md:mt-4
+                 lg:text-5.5 lg:tracking-[0.28em]"
+        >AI infrastructure for the next generation</span>
       </div>
 
-      <p class="hero-desc" id="hero-desc">
+      <!-- Description -->
+      <p
+        id="hero-desc"
+        class="relative z-[2] font-manrope font-normal text-center leading-[1.7]
+               text-[var(--muted-light)] max-w-130
+               text-[0.9375rem] mb-9
+               md:text-[1.0625rem] md:mb-12"
+      >
         Deploy, scale, and monitor your AI models with zero overhead. Built for teams who move fast and need infrastructure that keeps up.
       </p>
 
-      <div class="hero-actions" id="hero-actions">
-        <button class="btn btn-lg btn-primary">Start building free <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:10px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
-        <button class="btn btn-lg btn-outline">
+      <!-- CTA Buttons -->
+      <div
+        id="hero-actions"
+        class="flex flex-col w-full gap-3 items-center justify-center relative z-[2] mb-14
+               md:flex-row md:w-auto md:gap-4 md:mb-20 md:flex-wrap"
+      >
+        <button class="btn btn-lg btn-primary w-full md:w-auto">
+          Start building free
+          <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:10px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+        <button class="btn btn-lg btn-outline w-full md:w-auto">
           <span class="play-icon"></span>
           Watch demo
         </button>
       </div>
 
-      <div class="hero-stats">
-        <div class="hero-stat">
+      <!-- Stats -->
+      <div class="relative z-[2] flex flex-wrap justify-center w-full max-w-160
+                  gap-5 border-0 pt-0
+                  xs:gap-6 xs:border-t xs:border-[var(--border-subtle)] xs:pt-10
+                  md:gap-12">
+        <div class="text-center">
+          <!-- hero-stat-num class kept — JS counter animation targets it -->
           <div class="hero-stat-num" data-target="99.9" data-suffix="%">0</div>
-          <div class="hero-stat-label">Uptime SLA</div>
+          <div class="text-3 font-medium mt-1 tracking-[0.04em] text-[var(--muted)]">Uptime SLA</div>
         </div>
-        <div class="hero-stat-sep"></div>
-        <div class="hero-stat">
+        <div class="hidden xs:block w-px self-stretch bg-[var(--border-subtle)]"></div>
+        <div class="text-center">
           <div class="hero-stat-num" data-target="2" data-suffix="M+">0</div>
-          <div class="hero-stat-label">API calls/day</div>
+          <div class="text-3 font-medium mt-1 tracking-[0.04em] text-[var(--muted)]">API calls/day</div>
         </div>
-        <div class="hero-stat-sep"></div>
-        <div class="hero-stat">
+        <div class="hidden xs:block w-px self-stretch bg-[var(--border-subtle)]"></div>
+        <div class="text-center">
           <div class="hero-stat-num" data-prefix="<" data-target="50" data-suffix="ms">0</div>
-          <div class="hero-stat-label">Avg latency</div>
+          <div class="text-3 font-medium mt-1 tracking-[0.04em] text-[var(--muted)]">Avg latency</div>
         </div>
-        <div class="hero-stat-sep"></div>
-        <div class="hero-stat">
+        <div class="hidden xs:block w-px self-stretch bg-[var(--border-subtle)]"></div>
+        <div class="text-center">
           <div class="hero-stat-num" data-target="150" data-suffix="+">0</div>
-          <div class="hero-stat-label">Countries</div>
+          <div class="text-3 font-medium mt-1 tracking-[0.04em] text-[var(--muted)]">Countries</div>
         </div>
       </div>
     </section>
@@ -212,46 +262,64 @@
     <div class="section-divider"></div>
 
     <!-- ══ FEATURES ══ -->
-    <section class="features" id="features">
-      <div class="features-header">
+    <section
+      id="features"
+      class="relative overflow-hidden
+             px-6 py-16
+             md:px-12 md:py-20
+             lg:px-16 lg:py-28
+             bg-[linear-gradient(180deg,var(--base)_0%,var(--bg-features-end)_100%)]"
+    >
+      <!-- radial glow (replaces ::before) -->
+      <div class="absolute inset-0 pointer-events-none
+                  bg-[radial-gradient(circle_at_80%_20%,var(--cyan-alpha-08)_0%,transparent_50%)]"></div>
+
+      <!-- Header -->
+      <div class="grid grid-cols-1 gap-3 mb-10 items-end
+                  md:grid-cols-2 md:gap-6 md:mb-16">
         <div class="reveal-up">
-          <div class="section-eyebrow">What you get</div>
-          <h2 class="section-title">Everything you need to ship AI, fast.</h2>
+          <div class="text-[0.6875rem] font-bold tracking-[0.18em] uppercase text-[var(--violet-mid)] mb-4">What you get</div>
+          <h2 class="font-syne font-bold text-9 md:text-12 tracking-[-0.03em] leading-[1.08] text-[var(--white)] mb-4 max-w-120">Everything you need to ship AI, fast.</h2>
         </div>
         <div class="reveal-up">
-          <p class="section-sub">From model deployment to real-time monitoring — all the infrastructure your team needs without the ops overhead.</p>
+          <p class="text-base text-[var(--muted-light)] leading-[1.65] max-w-100 font-normal">From model deployment to real-time monitoring — all the infrastructure your team needs without the ops overhead.</p>
         </div>
       </div>
-      <div class="features-grid">
+
+      <!-- Grid — gap-px + bg creates 1px dividers between cards -->
+      <div class="grid grid-cols-1 gap-px
+                  bg-[var(--border-subtle)] border border-[var(--border-subtle)]
+                  rounded-xl overflow-hidden
+                  md:grid-cols-2 lg:grid-cols-3">
         <div class="feat-card highlighted reveal-up">
-          <div class="feat-icon">⚡</div>
-          <div class="feat-title">Instant Deployment</div>
-          <p class="feat-desc">Push models to production in under 60 seconds. Rollback is one click. Zero downtime deploys by default.</p>
+          <div class="w-10 h-10 bg-[var(--violet-vivid-alpha-15)] border border-[var(--violet-alpha-25)] rounded-2.5 flex items-center justify-center mb-5 text-lg">⚡</div>
+          <div class="font-syne font-bold text-[1.0625rem] text-[var(--white)] mb-2.5">Instant Deployment</div>
+          <p class="text-[0.844rem] text-[var(--muted-light)] leading-[1.65] font-normal">Push models to production in under 60 seconds. Rollback is one click. Zero downtime deploys by default.</p>
         </div>
         <div class="feat-card reveal-up">
-          <div class="feat-icon">🔒</div>
-          <div class="feat-title">Enterprise Security</div>
-          <p class="feat-desc">SOC2 Type II compliant. End-to-end encryption, private VPC, SSO and RBAC out of the box.</p>
+          <div class="w-10 h-10 bg-[var(--violet-vivid-alpha-15)] border border-[var(--violet-alpha-25)] rounded-2.5 flex items-center justify-center mb-5 text-lg">🔒</div>
+          <div class="font-syne font-bold text-[1.0625rem] text-[var(--white)] mb-2.5">Enterprise Security</div>
+          <p class="text-[0.844rem] text-[var(--muted-light)] leading-[1.65] font-normal">SOC2 Type II compliant. End-to-end encryption, private VPC, SSO and RBAC out of the box.</p>
         </div>
         <div class="feat-card reveal-up">
-          <div class="feat-icon">🔗</div>
-          <div class="feat-title">150+ Integrations</div>
-          <p class="feat-desc">Connect to your existing stack in minutes. Webhooks, REST, and GraphQL APIs included.</p>
+          <div class="w-10 h-10 bg-[var(--violet-vivid-alpha-15)] border border-[var(--violet-alpha-25)] rounded-2.5 flex items-center justify-center mb-5 text-lg">🔗</div>
+          <div class="font-syne font-bold text-[1.0625rem] text-[var(--white)] mb-2.5">150+ Integrations</div>
+          <p class="text-[0.844rem] text-[var(--muted-light)] leading-[1.65] font-normal">Connect to your existing stack in minutes. Webhooks, REST, and GraphQL APIs included.</p>
         </div>
         <div class="feat-card reveal-up">
-          <div class="feat-icon">📊</div>
-          <div class="feat-title">Real-time Analytics</div>
-          <p class="feat-desc">Model performance, token usage, error rates, and cost per inference — all in one dashboard.</p>
+          <div class="w-10 h-10 bg-[var(--violet-vivid-alpha-15)] border border-[var(--violet-alpha-25)] rounded-2.5 flex items-center justify-center mb-5 text-lg">📊</div>
+          <div class="font-syne font-bold text-[1.0625rem] text-[var(--white)] mb-2.5">Real-time Analytics</div>
+          <p class="text-[0.844rem] text-[var(--muted-light)] leading-[1.65] font-normal">Model performance, token usage, error rates, and cost per inference — all in one dashboard.</p>
         </div>
         <div class="feat-card reveal-up">
-          <div class="feat-icon">♾️</div>
-          <div class="feat-title">Auto-scaling</div>
-          <p class="feat-desc">Handles 0 to 10 million requests without configuration. Pay only for what you use.</p>
+          <div class="w-10 h-10 bg-[var(--violet-vivid-alpha-15)] border border-[var(--violet-alpha-25)] rounded-2.5 flex items-center justify-center mb-5 text-lg">♾️</div>
+          <div class="font-syne font-bold text-[1.0625rem] text-[var(--white)] mb-2.5">Auto-scaling</div>
+          <p class="text-[0.844rem] text-[var(--muted-light)] leading-[1.65] font-normal">Handles 0 to 10 million requests without configuration. Pay only for what you use.</p>
         </div>
         <div class="feat-card reveal-up">
-          <div class="feat-icon">⚙️</div>
-          <div class="feat-title">Open API</div>
-          <p class="feat-desc">Full programmatic control. Terraform provider, CLI, and SDKs for Python, Node, and Go.</p>
+          <div class="w-10 h-10 bg-[var(--violet-vivid-alpha-15)] border border-[var(--violet-alpha-25)] rounded-2.5 flex items-center justify-center mb-5 text-lg">⚙️</div>
+          <div class="font-syne font-bold text-[1.0625rem] text-[var(--white)] mb-2.5">Open API</div>
+          <p class="text-[0.844rem] text-[var(--muted-light)] leading-[1.65] font-normal">Full programmatic control. Terraform provider, CLI, and SDKs for Python, Node, and Go.</p>
         </div>
       </div>
     </section>
@@ -260,79 +328,79 @@
 
     <!-- ══ HOW IT WORKS ══ -->
     <section class="howitworks" id="howitworks">
-      <div class="hiw-header">
-        <div class="section-eyebrow">The Method</div>
-        <h2 class="section-title">Zero to production in seconds.</h2>
+      <div class="pb-8 z-10 md:pt-20 md:px-16 md:pb-0">
+        <div class="text-[0.6875rem] font-bold tracking-[0.18em] uppercase text-[var(--violet-mid)] mb-4">The Method</div>
+        <h2 class="font-syne font-bold text-9 md:text-12 tracking-[-0.03em] leading-[1.08] text-[var(--white)] mb-4 max-w-120">Zero to production in seconds.</h2>
       </div>
-      
+
       <div class="horizontal-scroll-wrapper">
         <div class="steps-list">
-          
+
           <!-- Step 01 -->
           <div class="step-row">
-            <div class="step-num-bg">01</div>
-            <div class="step-content">
+            <div class="hidden md:block absolute -left-5 top-1/2 -translate-y-1/2 font-syne font-extrabold text-80 leading-none text-[var(--violet-alpha-05)] pointer-events-none -z-[1]">01</div>
+            <div class="w-full relative md:w-auto md:shrink-0 md:grow-0 md:basis-120">
               <div class="step-num-small">STEP 01</div>
-              <h3 class="step-title">Connect your <br>AI models</h3>
-              <p class="step-desc">Upload fine-tuned weights or connect to any foundation endpoint. Supports PyTorch, ONNX, and HuggingFace with native precision.</p>
-              <div class="step-tag">
-                <span class="widget-dot"></span>
+              <h3 class="font-syne font-bold text-5.5 md:text-11 text-[var(--white)] mb-5 tracking-[-0.03em] leading-[1.1]">Connect your <br>AI models</h3>
+              <p class="text-[1.0625rem] text-[var(--muted-light)] leading-[1.7] mb-8">Upload fine-tuned weights or connect to any foundation endpoint. Supports PyTorch, ONNX, and HuggingFace with native precision.</p>
+              <div class="inline-flex items-center gap-2 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-[var(--violet-light)] bg-[var(--violet-alpha-10)] border border-[var(--violet-alpha-20)] px-3.5 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-[var(--violet-mid)] shadow-[0_0_0.625rem_var(--violet-mid)]"></span>
                 Setup · 5 min
               </div>
             </div>
-            <div class="step-visual">
+            <div class="flex-1 max-w-125">
               <div class="step-widget">
-                <div class="step-widget-header">
-                  <div style="display:flex;gap:6px"><div class="widget-dot"></div><div class="widget-dot" style="opacity:0.3;box-shadow:none"></div></div>
+                <div class="flex justify-between mb-6 pb-4 border-b border-[var(--white-alpha-05)]">
+                  <div style="display:flex;gap:6px"><div class="w-2 h-2 rounded-full bg-[var(--violet-mid)] shadow-[0_0_0.625rem_var(--violet-mid)]"></div><div class="w-2 h-2 rounded-full bg-[var(--violet-mid)]" style="opacity:0.3;box-shadow:none"></div></div>
                   <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em">TERMINAL</div>
                 </div>
-                <div class="step-widget-code" style="color:#6B7280;margin-bottom:4px">// Initialize connection</div>
-                <div class="step-widget-code">$ ether model connect \<br>&nbsp;&nbsp;--source hf/meta-llama<br><span style="color:#8B5CF6">> Verifying...</span><br><span style="color:#28C840">✓ Model connected successfully</span></div>
+                <div class="step-widget-code font-manrope text-xs text-[var(--violet-alpha-80)] leading-[1.8]" style="color:#6B7280;margin-bottom:4px">// Initialize connection</div>
+                <div class="step-widget-code font-manrope text-xs text-[var(--violet-alpha-80)] leading-[1.8]">$ ether model connect \<br>&nbsp;&nbsp;--source hf/meta-llama<br><span style="color:#8B5CF6">> Verifying...</span><br><span style="color:#28C840">✓ Model connected successfully</span></div>
               </div>
             </div>
           </div>
 
           <!-- Step 02 -->
           <div class="step-row">
-            <div class="step-num-bg">02</div>
-            <div class="step-content">
+            <div class="hidden md:block absolute -left-5 top-1/2 -translate-y-1/2 font-syne font-extrabold text-80 leading-none text-[var(--violet-alpha-05)] pointer-events-none -z-[1]">02</div>
+            <div class="w-full relative md:w-auto md:shrink-0 md:grow-0 md:basis-120">
               <div class="step-num-small">STEP 02</div>
-              <h3 class="step-title">Configure your <br>infrastructure</h3>
-              <p class="step-desc">Define scaling limits, caching policies, and authentication layers. No complex Kubernetes YAML or manual provisioning required.</p>
-              <div class="step-tag">
-                <span class="widget-dot"></span>
+              <h3 class="font-syne font-bold text-5.5 md:text-11 text-[var(--white)] mb-5 tracking-[-0.03em] leading-[1.1]">Configure your <br>infrastructure</h3>
+              <p class="text-[1.0625rem] text-[var(--muted-light)] leading-[1.7] mb-8">Define scaling limits, caching policies, and authentication layers. No complex Kubernetes YAML or manual provisioning required.</p>
+              <div class="inline-flex items-center gap-2 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-[var(--violet-light)] bg-[var(--violet-alpha-10)] border border-[var(--violet-alpha-20)] px-3.5 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-[var(--violet-mid)] shadow-[0_0_0.625rem_var(--violet-mid)]"></span>
                 Config · 10 min
               </div>
             </div>
-            <div class="step-visual">
+            <div class="flex-1 max-w-125">
               <div class="step-widget">
-                <div class="step-widget-header">
-                  <div style="display:flex;gap:6px"><div class="widget-dot"></div><div class="widget-dot" style="opacity:0.3;box-shadow:none"></div></div>
+                <div class="flex justify-between mb-6 pb-4 border-b border-[var(--white-alpha-05)]">
+                  <div style="display:flex;gap:6px"><div class="w-2 h-2 rounded-full bg-[var(--violet-mid)] shadow-[0_0_0.625rem_var(--violet-mid)]"></div><div class="w-2 h-2 rounded-full bg-[var(--violet-mid)]" style="opacity:0.3;box-shadow:none"></div></div>
                   <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em">PIPELINE</div>
                 </div>
-                <div class="step-widget-row"><span>Maximum Throughput</span><span style="color:#C4B5FD">2,500 RPS</span></div>
-                <div class="step-widget-row"><span>Global Edge Cache</span><span style="color:#C4B5FD">Enabled</span></div>
-                <div class="step-widget-row"><span>Auth Layer</span><span style="color:#28C840">JWT Secured</span></div>
+                <div class="step-widget-row flex justify-between items-center px-3 py-2 bg-[var(--white-alpha-03)] rounded-1.5 text-xs text-[var(--muted-light)] mb-2"><span>Maximum Throughput</span><span style="color:#C4B5FD">2,500 RPS</span></div>
+                <div class="step-widget-row flex justify-between items-center px-3 py-2 bg-[var(--white-alpha-03)] rounded-1.5 text-xs text-[var(--muted-light)] mb-2"><span>Global Edge Cache</span><span style="color:#C4B5FD">Enabled</span></div>
+                <div class="step-widget-row flex justify-between items-center px-3 py-2 bg-[var(--white-alpha-03)] rounded-1.5 text-xs text-[var(--muted-light)]"><span>Auth Layer</span><span style="color:#28C840">JWT Secured</span></div>
               </div>
             </div>
           </div>
 
           <!-- Step 03 -->
           <div class="step-row">
-            <div class="step-num-bg">03</div>
-            <div class="step-content">
+            <div class="hidden md:block absolute -left-5 top-1/2 -translate-y-1/2 font-syne font-extrabold text-80 leading-none text-[var(--violet-alpha-05)] pointer-events-none -z-[1]">03</div>
+            <div class="w-full relative md:w-auto md:shrink-0 md:grow-0 md:basis-120">
               <div class="step-num-small">STEP 03</div>
-              <h3 class="step-title">Go live on our <br>global edge</h3>
-              <p class="step-desc">Deploy your pipeline to 150+ locations instantly. Real-time observability and auto-scaling built into every deployment.</p>
-              <div class="step-tag">
-                <span class="widget-dot" style="background:#28C840;box-shadow:0 0 10px #28C840"></span>
+              <h3 class="font-syne font-bold text-5.5 md:text-11 text-[var(--white)] mb-5 tracking-[-0.03em] leading-[1.1]">Go live on our <br>global edge</h3>
+              <p class="text-[1.0625rem] text-[var(--muted-light)] leading-[1.7] mb-8">Deploy your pipeline to 150+ locations instantly. Real-time observability and auto-scaling built into every deployment.</p>
+              <div class="inline-flex items-center gap-2 text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-[var(--violet-light)] bg-[var(--violet-alpha-10)] border border-[var(--violet-alpha-20)] px-3.5 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full" style="background:#28C840;box-shadow:0 0 10px #28C840"></span>
                 Go live · Instant
               </div>
             </div>
-            <div class="step-visual">
+            <div class="flex-1 max-w-125">
               <div class="step-widget">
-                <div class="step-widget-header">
-                  <div style="display:flex;gap:6px"><div class="widget-dot"></div><div class="widget-dot" style="opacity:0.3;box-shadow:none"></div></div>
+                <div class="flex justify-between mb-6 pb-4 border-b border-[var(--white-alpha-05)]">
+                  <div style="display:flex;gap:6px"><div class="w-2 h-2 rounded-full bg-[var(--violet-mid)] shadow-[0_0_0.625rem_var(--violet-mid)]"></div><div class="w-2 h-2 rounded-full bg-[var(--violet-mid)]" style="opacity:0.3;box-shadow:none"></div></div>
                   <div style="font-size:10px;color:var(--muted);letter-spacing:0.1em">LIVE STATUS</div>
                 </div>
                 <div style="display:flex;gap:24px;margin-top:8px">
@@ -356,23 +424,36 @@
     <div class="section-divider"></div>
 
     <!-- ══ METRICS ══ -->
-    <section class="metrics" id="metrics">
-      <div class="metrics-grid">
-        <div class="metric-card">
+    <section
+      id="metrics"
+      class="relative overflow-hidden
+             px-6 py-14
+             md:px-12 md:py-20
+             lg:px-16 lg:py-24
+             bg-[linear-gradient(180deg,var(--base)_0%,var(--bg-metrics-end)_100%)]"
+    >
+      <!-- radial teal glow (replaces ::before) -->
+      <div class="absolute inset-0 pointer-events-none
+                  bg-[radial-gradient(ellipse_70%_100%_at_50%_50%,var(--accent-teal-alpha-10)_0%,transparent_70%)]"></div>
+
+      <!-- gap-px + bg creates 1px card dividers; metric-card/num/label keep CSS gradient text -->
+      <div class="relative z-[1] grid grid-cols-2 gap-px lg:grid-cols-4
+                  bg-[var(--border-subtle)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+        <div class="bg-[var(--surface)] px-10 py-12 text-center">
           <div class="metric-num" data-target="2" data-suffix="M+">0</div>
-          <div class="metric-label">API calls / day</div>
+          <div class="text-[0.8125rem] text-[var(--muted)] font-medium tracking-[0.04em] uppercase">API calls / day</div>
         </div>
-        <div class="metric-card">
+        <div class="bg-[var(--surface)] px-10 py-12 text-center">
           <div class="metric-num" data-target="99.9" data-suffix="%">0</div>
-          <div class="metric-label">Uptime SLA</div>
+          <div class="text-[0.8125rem] text-[var(--muted)] font-medium tracking-[0.04em] uppercase">Uptime SLA</div>
         </div>
-        <div class="metric-card">
+        <div class="bg-[var(--surface)] px-10 py-12 text-center">
           <div class="metric-num" data-prefix="<" data-target="50" data-suffix="ms">0</div>
-          <div class="metric-label">Avg latency</div>
+          <div class="text-[0.8125rem] text-[var(--muted)] font-medium tracking-[0.04em] uppercase">Avg latency</div>
         </div>
-        <div class="metric-card">
+        <div class="bg-[var(--surface)] px-10 py-12 text-center">
           <div class="metric-num" data-target="150" data-suffix="+">0</div>
-          <div class="metric-label">Countries</div>
+          <div class="text-[0.8125rem] text-[var(--muted)] font-medium tracking-[0.04em] uppercase">Countries</div>
         </div>
       </div>
     </section>
@@ -380,48 +461,64 @@
     <div class="section-divider"></div>
 
     <!-- ══ TESTIMONIALS ══ -->
-    <section class="testimonials" id="testimonials">
-      <div class="testi-header reveal-up">
+    <section
+      id="testimonials"
+      class="relative overflow-hidden
+             px-6 py-16
+             md:px-12 md:py-20
+             lg:px-16 lg:py-28
+             bg-[linear-gradient(180deg,var(--surface)_0%,var(--bg-testimonials-end)_100%)]"
+    >
+      <!-- indigo glow + top border line (replaces ::after/::before) -->
+      <div class="absolute inset-0 pointer-events-none
+                  bg-[radial-gradient(circle_at_10%_30%,var(--accent-indigo-alpha-08)_0%,transparent_40%)]"></div>
+      <div class="absolute top-0 inset-x-0 h-px bg-[linear-gradient(90deg,transparent,var(--violet-alpha-30),transparent)]"></div>
+
+      <!-- Header -->
+      <div class="grid grid-cols-1 gap-3 items-end reveal-up
+                  md:grid-cols-2 md:gap-6">
         <div>
-          <div class="section-eyebrow">Social proof</div>
-          <h2 class="section-title" style="margin-bottom:0">Trusted by teams shipping real AI.</h2>
+          <div class="text-[0.6875rem] font-bold tracking-[0.18em] uppercase text-[var(--violet-mid)] mb-4">Social proof</div>
+          <h2 class="font-syne font-bold text-9 md:text-12 tracking-[-0.03em] leading-[1.08] text-[var(--white)]">Trusted by teams shipping real AI.</h2>
         </div>
-        <p class="section-sub" style="margin-bottom:0">From two-person startups to Series B companies — teams that can't afford downtime choose Ether.</p>
+        <p class="text-base text-[var(--muted-light)] leading-[1.65] max-w-100 font-normal">From two-person startups to Series B companies — teams that can't afford downtime choose Ether.</p>
       </div>
-      <div class="testi-grid">
+
+      <!-- Cards — testi-card keeps hover/border/bg CSS effects -->
+      <div class="grid grid-cols-1 gap-5 mt-10 md:grid-cols-2 lg:grid-cols-3 md:mt-16">
         <div class="testi-card reveal-up">
-          <div class="testi-stars">★★★★★</div>
-          <div class="testi-quote-mark">"</div>
-          <p class="testi-text">We cut our infrastructure costs by 60% in the first month. The auto-scaling alone paid for three months of the subscription.</p>
-          <div class="testi-author">
-            <div class="testi-avatar">JK</div>
+          <div class="absolute top-8 right-8 text-[var(--star-gold)] text-3 tracking-[2px]">★★★★★</div>
+          <div class="font-syne text-12 text-[var(--violet-alpha-25)] leading-none mb-4">"</div>
+          <p class="text-[0.9375rem] text-[var(--muted-light)] leading-[1.7] mb-7 font-normal">We cut our infrastructure costs by 60% in the first month. The auto-scaling alone paid for three months of the subscription.</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9.5 h-9.5 rounded-full bg-[linear-gradient(135deg,var(--violet),var(--violet-mid))] border-2 border-[var(--violet-alpha-30)] flex items-center justify-center font-syne font-bold text-[0.8125rem] text-white shrink-0">JK</div>
             <div>
-              <div class="testi-name">James Kato</div>
-              <div class="testi-role">CTO · Pulsar AI</div>
+              <div class="font-bold text-3.5 text-[var(--white)]">James Kato</div>
+              <div class="text-3 text-[var(--muted)] mt-[2px]">CTO · Pulsar AI</div>
             </div>
           </div>
         </div>
         <div class="testi-card featured reveal-up">
-          <div class="testi-stars">★★★★★</div>
-          <div class="testi-quote-mark">"</div>
-          <p class="testi-text">The deployment experience is unlike anything else. We went from a Jupyter notebook to a production API serving 50k users in one afternoon.</p>
-          <div class="testi-author">
-            <div class="testi-avatar">SR</div>
+          <div class="absolute top-8 right-8 text-[var(--star-gold)] text-3 tracking-[2px]">★★★★★</div>
+          <div class="font-syne text-12 text-[var(--violet-alpha-25)] leading-none mb-4">"</div>
+          <p class="text-[0.9375rem] text-[var(--muted-light)] leading-[1.7] mb-7 font-normal">The deployment experience is unlike anything else. We went from a Jupyter notebook to a production API serving 50k users in one afternoon.</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9.5 h-9.5 rounded-full bg-[linear-gradient(135deg,var(--violet),var(--violet-mid))] border-2 border-[var(--violet-alpha-30)] flex items-center justify-center font-syne font-bold text-[0.8125rem] text-white shrink-0">SR</div>
             <div>
-              <div class="testi-name">Sara Reyes</div>
-              <div class="testi-role">Founder · Novaform</div>
+              <div class="font-bold text-3.5 text-[var(--white)]">Sara Reyes</div>
+              <div class="text-3 text-[var(--muted)] mt-[2px]">Founder · Novaform</div>
             </div>
           </div>
         </div>
         <div class="testi-card reveal-up">
-          <div class="testi-stars">★★★★★</div>
-          <div class="testi-quote-mark">"</div>
-          <p class="testi-text">Our on-call alerts dropped to zero after migrating to Ether. The monitoring dashboard surfaces things we didn't even know to look for.</p>
-          <div class="testi-author">
-            <div class="testi-avatar">MP</div>
+          <div class="absolute top-8 right-8 text-[var(--star-gold)] text-3 tracking-[2px]">★★★★★</div>
+          <div class="font-syne text-12 text-[var(--violet-alpha-25)] leading-none mb-4">"</div>
+          <p class="text-[0.9375rem] text-[var(--muted-light)] leading-[1.7] mb-7 font-normal">Our on-call alerts dropped to zero after migrating to Ether. The monitoring dashboard surfaces things we didn't even know to look for.</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9.5 h-9.5 rounded-full bg-[linear-gradient(135deg,var(--violet),var(--violet-mid))] border-2 border-[var(--violet-alpha-30)] flex items-center justify-center font-syne font-bold text-[0.8125rem] text-white shrink-0">MP</div>
             <div>
-              <div class="testi-name">Marcus Park</div>
-              <div class="testi-role">Lead Eng · Arctis Labs</div>
+              <div class="font-bold text-3.5 text-[var(--white)]">Marcus Park</div>
+              <div class="text-3 text-[var(--muted)] mt-[2px]">Lead Eng · Arctis Labs</div>
             </div>
           </div>
         </div>
@@ -431,56 +528,71 @@
     <div class="section-divider"></div>
 
     <!-- ══ PRICING ══ -->
-    <section class="pricing" id="pricing">
-      <div class="pricing-header reveal-up">
-        <div class="section-eyebrow">Pricing</div>
-        <h2 class="section-title" style="max-width:100%;text-align:center">Simple, transparent pricing.</h2>
-        <p class="section-sub" style="max-width:480px;margin:0 auto;text-align:center">No hidden fees. No surprise bills. Start free, upgrade when you scale.</p>
+    <section
+      id="pricing"
+      class="relative overflow-hidden
+             px-6 py-16
+             md:px-12 md:py-20
+             lg:px-16 lg:py-28
+             bg-[linear-gradient(180deg,var(--base)_0%,var(--bg-pricing-end)_100%)]"
+    >
+      <!-- violet glow (replaces ::before) -->
+      <div class="absolute inset-0 pointer-events-none
+                  bg-[radial-gradient(circle_at_90%_70%,var(--violet-alpha-08)_0%,transparent_45%)]"></div>
+
+      <!-- Header -->
+      <div class="text-center reveal-up">
+        <div class="text-[0.6875rem] font-bold tracking-[0.18em] uppercase text-[var(--violet-mid)] mb-4">Pricing</div>
+        <h2 class="font-syne font-bold text-9 md:text-12 tracking-[-0.03em] leading-[1.08] text-[var(--white)] mb-4 w-full text-center">Simple, transparent pricing.</h2>
+        <p class="text-base text-[var(--muted-light)] leading-[1.65] font-normal max-w-[480px] mx-auto text-center">No hidden fees. No surprise bills. Start free, upgrade when you scale.</p>
       </div>
-      <div class="pricing-grid">
+
+      <!-- Cards — price-card keeps hover/border/bg CSS effects -->
+      <div class="grid grid-cols-1 gap-5 mt-10 max-w-240 mx-auto
+                  md:mt-16 lg:grid-cols-3">
         <div class="price-card reveal-up">
-          <div class="price-tier">Starter</div>
-          <div class="price-amount"><span class="currency">$</span>0</div>
-          <div class="price-period">Free forever · up to 10k calls/mo</div>
-          <div class="price-divider"></div>
-          <ul class="price-features">
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>1 model deployment</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>10,000 API calls/mo</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Basic analytics</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Community support</li>
-            <li class="disabled"><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8H10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Custom domain</li>
-            <li class="disabled"><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8H10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>SLA guarantee</li>
+          <div class="text-[0.6875rem] font-bold tracking-[0.16em] uppercase text-[var(--muted)] mb-4">Starter</div>
+          <div class="font-syne font-extrabold text-13 tracking-[-0.04em] text-[var(--white)] leading-none mb-1"><span class="currency">$</span>0</div>
+          <div class="text-[0.8125rem] text-[var(--muted)] mb-7">Free forever · up to 10k calls/mo</div>
+          <div class="h-px bg-[var(--border-subtle)] mb-7"></div>
+          <ul class="price-features list-none mb-9">
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>1 model deployment</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>10,000 API calls/mo</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Basic analytics</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Community support</li>
+            <li class="disabled"><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8H10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Custom domain</li>
+            <li class="disabled"><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8H10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>SLA guarantee</li>
           </ul>
           <button class="btn btn-md btn-outline btn-full">Get started free</button>
         </div>
         <div class="price-card popular reveal-up">
-          <div class="popular-badge">Most Popular</div>
-          <div class="price-tier">Pro</div>
-          <div class="price-amount"><span class="currency">$</span>49</div>
-          <div class="price-period">per month · billed annually</div>
-          <div class="price-divider"></div>
-          <ul class="price-features">
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>10 model deployments</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>2M API calls/mo included</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Advanced analytics</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Email + chat support</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Custom domain</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>99.9% SLA</li>
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[var(--violet)] text-white text-2.5 font-bold tracking-[0.12em] uppercase px-3.5 py-1 rounded-full whitespace-nowrap">Most Popular</div>
+          <div class="text-[0.6875rem] font-bold tracking-[0.16em] uppercase text-[var(--muted)] mb-4">Pro</div>
+          <div class="font-syne font-extrabold text-13 tracking-[-0.04em] text-[var(--white)] leading-none mb-1"><span class="currency">$</span>49</div>
+          <div class="text-[0.8125rem] text-[var(--muted)] mb-7">per month · billed annually</div>
+          <div class="h-px bg-[var(--border-subtle)] mb-7"></div>
+          <ul class="price-features list-none mb-9">
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>10 model deployments</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>2M API calls/mo included</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Advanced analytics</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Email + chat support</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Custom domain</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>99.9% SLA</li>
           </ul>
           <button class="btn btn-md btn-primary btn-full">Start Pro trial <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
         </div>
         <div class="price-card reveal-up">
-          <div class="price-tier">Enterprise</div>
-          <div class="price-amount" style="font-size:38px;padding-top:8px">Custom</div>
-          <div class="price-period">Volume pricing · dedicated infra</div>
-          <div class="price-divider"></div>
-          <ul class="price-features">
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited deployments</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited API calls</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Custom analytics + BI</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated Slack channel</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Private VPC + SSO</li>
-            <li><svg class="price-check" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>99.99% SLA + SLOs</li>
+          <div class="text-[0.6875rem] font-bold tracking-[0.16em] uppercase text-[var(--muted)] mb-4">Enterprise</div>
+          <div class="font-syne font-extrabold tracking-[-0.04em] text-[var(--white)] leading-none mb-1" style="font-size:38px;padding-top:8px">Custom</div>
+          <div class="text-[0.8125rem] text-[var(--muted)] mb-7">Volume pricing · dedicated infra</div>
+          <div class="h-px bg-[var(--border-subtle)] mb-7"></div>
+          <ul class="price-features list-none mb-9">
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited deployments</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited API calls</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Custom analytics + BI</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated Slack channel</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Private VPC + SSO</li>
+            <li><svg class="text-[var(--violet-mid)] shrink-0 block"width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>99.99% SLA + SLOs</li>
           </ul>
           <button class="btn btn-md btn-outline btn-full">Talk to sales <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:middle"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
         </div>
@@ -490,15 +602,31 @@
     <div class="section-divider"></div>
 
     <!-- ══ FOOTER ══ -->
-    <footer class="footer" id="footer">
-      <div class="footer-top">
-        <div class="footer-brand">
-          <span class="footer-brand-logo">ETH<span>E</span>R</span>
-          <p class="footer-tagline">AI infrastructure built for teams who can't afford to wait. Ship models, not ops tickets.</p>
+    <footer
+      id="footer"
+      class="relative overflow-hidden border-t border-[var(--border-subtle)]
+             px-6 py-12 pb-9
+             md:px-12 md:py-14 md:pb-10
+             lg:px-16 lg:py-16 lg:pb-12
+             bg-[linear-gradient(180deg,var(--surface-100)_0%,var(--bg-footer-end)_100%)]"
+    >
+      <!-- glows + top line (replaces ::after / ::before) -->
+      <div class="absolute inset-0 pointer-events-none
+                  bg-[radial-gradient(circle_at_50%_100%,var(--violet-alpha-05)_0%,transparent_60%)]"></div>
+      <div class="absolute top-0 inset-x-0 h-px bg-[linear-gradient(90deg,transparent,var(--violet-alpha-30),transparent)]"></div>
+
+      <!-- Top grid — footer-brand keeps child-span color via CSS -->
+      <div class="grid grid-cols-2 gap-8 mb-12 relative z-[1]
+                  md:gap-12 md:mb-16 md:[grid-template-columns:1.6fr_1fr_1fr_1fr] md:grid-cols-4">
+        <div class="col-span-2 md:col-auto">
+          <span class="font-syne font-extrabold text-5.5 tracking-[0.12em] text-[var(--white)] block mb-4">ETH<span class="text-[var(--violet-mid)]">E</span>R</span>
+          <p class="text-3.5 text-[var(--muted)] leading-[1.65] max-w-60 md:max-w-full">
+            AI infrastructure built for teams who can't afford to wait. Ship models, not ops tickets.
+          </p>
         </div>
         <div>
-          <div class="footer-col-title">Product</div>
-          <ul class="footer-links">
+          <div class="text-3 font-bold tracking-[0.12em] uppercase text-[var(--white)] mb-5">Product</div>
+          <ul class="footer-links flex flex-col gap-3">
             <li><a href="#">Features</a></li>
             <li><a href="#">Pricing</a></li>
             <li><a href="#">Changelog</a></li>
@@ -506,8 +634,8 @@
           </ul>
         </div>
         <div>
-          <div class="footer-col-title">Developers</div>
-          <ul class="footer-links">
+          <div class="text-3 font-bold tracking-[0.12em] uppercase text-[var(--white)] mb-5">Developers</div>
+          <ul class="footer-links flex flex-col gap-3">
             <li><a href="#">Documentation</a></li>
             <li><a href="#">API Reference</a></li>
             <li><a href="#">Status</a></li>
@@ -515,8 +643,8 @@
           </ul>
         </div>
         <div>
-          <div class="footer-col-title">Company</div>
-          <ul class="footer-links">
+          <div class="text-3 font-bold tracking-[0.12em] uppercase text-[var(--white)] mb-5">Company</div>
+          <ul class="footer-links flex flex-col gap-3">
             <li><a href="#">About</a></li>
             <li><a href="#">Blog</a></li>
             <li><a href="#">Careers</a></li>
@@ -524,13 +652,16 @@
           </ul>
         </div>
       </div>
-      <div class="footer-bottom">
-        <div class="footer-socials">
-          <div class="social-icon">𝕏</div>
-          <div class="social-icon">in</div>
-          <div class="social-icon">gh</div>
+
+      <!-- Bottom bar -->
+      <div class="flex items-center justify-between flex-wrap gap-4 pt-7
+                  border-t border-[var(--border-subtle)] relative z-[1]">
+        <div class="flex gap-4">
+          <div class="w-8 h-8 border border-[var(--border-subtle)] rounded-md flex items-center justify-center text-[0.8125rem] text-[var(--muted)]">𝕏</div>
+          <div class="w-8 h-8 border border-[var(--border-subtle)] rounded-md flex items-center justify-center text-[0.8125rem] text-[var(--muted)]">in</div>
+          <div class="w-8 h-8 border border-[var(--border-subtle)] rounded-md flex items-center justify-center text-[0.8125rem] text-[var(--muted)]">gh</div>
         </div>
-        <div class="footer-copy">© 2026 Ether. All rights reserved.</div>
+        <div class="text-[0.78125rem] text-[var(--muted)]">© 2026 Ether. All rights reserved.</div>
         <button class="btn btn-sm btn-outline" onclick="lenis.scrollTo(0)">Back to top <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(-90deg);"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
       </div>
     </footer>

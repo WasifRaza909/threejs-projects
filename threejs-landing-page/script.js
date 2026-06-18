@@ -803,7 +803,7 @@ loaderTl
 function playHeroTimeline() {
   const heroTl = gsap.timeline({ defaults: { ease: "power2.out" } });
   heroTl
-    .fromTo('.nav-logo',
+    .fromTo('#nav-logo',
       { opacity: 0, y: -18 },
       { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
     )
@@ -811,11 +811,6 @@ function playHeroTimeline() {
       { opacity: 0, y: -14 },
       { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.07 },
       '-=0.4'
-    )
-    .fromTo('.nav-cta',
-      { opacity: 0, x: 18 },
-      { opacity: 1, x: 0, duration: 0.55, ease: 'power3.out' },
-      '-=0.38'
     )
     .fromTo("#hero-badge", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.8 }, "-=0.2")
     .to("#ether-3d-container", { opacity: 1, duration: 0.3, onStart: () => { if (window.startLetterDrop) window.startLetterDrop(); } }, "-=1.8")
@@ -917,18 +912,6 @@ updateTimelineUI = (index) => {
   });
 };
 
-drawer.addEventListener('mousemove', (e) => {
-  if (!window.isNavOpen) return;
-  const { clientX, clientY } = e;
-  const xPos = (clientX / window.innerWidth - 0.5) * 30;
-  const yPos = (clientY / window.innerHeight - 0.5) * 30;
-  gsap.to('.drawer-nav-container', {
-    x: xPos,
-    y: yPos,
-    duration: 1,
-    ease: 'power2.out'
-  });
-});
 
 timelinePoints.forEach((point, index) => {
   const targetId = point.dataset.section;
